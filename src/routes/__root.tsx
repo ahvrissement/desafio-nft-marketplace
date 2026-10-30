@@ -1,7 +1,12 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
+import { Outlet, createRootRouteWithContext, useMatches } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
+import { Footer } from '@/components/layout/footer'
+import { Header } from '@/components/layout/header'
+import { MobileTabBar, type MobileTab } from '@/components/layout/mobile-tab-bar'
+import { cn } from '@/lib/utils'
 
 // "Contexto" do router: objetos que toda rota recebe nos seus loaders.
 // Passamos o queryClient para que uma rota possa pré-carregar dados
@@ -10,16 +15,47 @@ export interface RouterContext {
   queryClient: QueryClient
 }
 
+// staticData: informações FIXAS que cada rota declara sobre si mesma.
+// Aqui: "esta tela mostra a barra inferior no mobile, com este item ativo".
+// Como no Register do main.tsx, o declare module deixa isso tipado.
+declare module '@tanstack/react-router' {
+  interface StaticDataRouteOption {
+    mobileTab?: MobileTab
+  }
+}
+
 // __root é o layout que envolve todas as páginas. <Outlet /> é onde a página
-// da rota atual é renderizada. Header e Footer vão entrar aqui depois.
+// da rota atual é renderizada.
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 })
 
 function RootLayout() {
+  // A rota mais "funda" que declarar mobileTab vence (ex.: /profile/wallets).
+  const mobileTab = useMatches({
+    select: (matches) => matches.findLast((match) => match.staticData.mobileTab)?.staticData.mobileTab,
+  })
+
   return (
-    <>
-      <Outlet />
+    // A barra inferior é fixa e cobre o fim da página: o padding reserva esse espaço.
+    <div className={cn('flex min-h-svh flex-col', mobileTab && 'pb-31.5 lg:pb-0')}>
+      {/* Link "pular para o conteúdo": o primeiro Tab da página. Invisível até
+          receber foco; poupa quem navega por teclado de passar por todo o menu. */}
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-ink"
+      >
+        Pular para o conteúdo
+      </a>
+
+      <Header />
+      <main id="conteudo" className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+
+      {mobileTab && <MobileTabBar active={mobileTab} />}
+
       {/* Os painéis de devtools só aparecem em desenvolvimento */}
       {import.meta.env.DEV && (
         <>
@@ -27,6 +63,6 @@ function RootLayout() {
           <TanStackRouterDevtools position="bottom-right" />
         </>
       )}
-    </>
+    </div>
   )
 }

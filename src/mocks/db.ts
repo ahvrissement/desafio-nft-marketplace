@@ -9,15 +9,16 @@ import { createSeedNfts } from './seed'
 const STORAGE_KEY = 'kurio:mock-db'
 // Mude este número ao alterar o formato do banco: dados antigos salvos
 // no navegador são descartados em vez de quebrar o app.
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2 // 2: + newsletter
 
 export interface DbState {
   schemaVersion: number
   nfts: Nft[]
+  newsletter: string[] // e-mails inscritos, já em minúsculas
 }
 
 function createInitialState(): DbState {
-  return { schemaVersion: SCHEMA_VERSION, nfts: createSeedNfts() }
+  return { schemaVersion: SCHEMA_VERSION, nfts: createSeedNfts(), newsletter: [] }
 }
 
 function load(): DbState {

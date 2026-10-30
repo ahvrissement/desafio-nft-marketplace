@@ -24,6 +24,8 @@
     --color-border-soft: var(--kurio-border-soft);
     --color-text-accent: var(--kurio-text-accent);
     --color-text-secondary: var(--kurio-text-secondary);
+    --color-text-subtle: var(--kurio-secondary); /* "Color/Secondary" do Figma: placeholders */
+    --color-ink: var(--kurio-ink);
 
     --color-ring: var(--ring);
     --color-input: var(--input);
@@ -63,7 +65,7 @@
     --kurio-text-accent: #e89b55;
     --kurio-secondary: #b39463;
     --kurio-text-secondary: #cfb28c;
-    --kurio-text-primary: #f7f3ec;
+    --kurio-text-primary: #f5f1eb; /* "Color/Foreground" do Figma */
 
     /* Mapeamento para os nomes do shadcn */
     --background: var(--kurio-ink);
@@ -85,6 +87,18 @@
     --input: var(--kurio-border-soft);
     --ring: var(--kurio-text-accent);
     --radius: 0.5rem;
+}
+
+/*
+ * Largura de conteúdo do Figma: 1200px centralizados (120px de margem em 1440).
+ * Em telas menores, 24px de respiro nas laterais (o mesmo do frame mobile).
+ * @utility cria uma classe do Tailwind: <div class="page-container">.
+ */
+@utility page-container {
+    width: 100%;
+    max-width: calc(1200px + 2 * 1.5rem);
+    margin-inline: auto;
+    padding-inline: 1.5rem;
 }
 
 @layer base {
