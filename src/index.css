@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/roboto-mono";
+
+/*
+ * TEMA DO KURIO (tokens do Figma)
+ *
+ * 1) :root guarda os valores crus, com os mesmos nomes do Figma (--kurio-*).
+ * 2) Os nomes "semânticos" do shadcn (--background, --primary...) apontam para eles.
+ *    Assim os componentes do shadcn já nascem com a cara do Figma.
+ * 3) @theme inline transforma cada variável em classe do Tailwind:
+ *    --color-primary vira bg-primary, text-primary, border-primary...
+ *
+ * O site só tem tema escuro, então não existe bloco ".dark".
+ */
+
+@theme inline {
+    --font-sans: 'Roboto Mono Variable', ui-monospace, monospace;
+    --font-heading: var(--font-sans);
+
+    /* Cores extras do Figma, sem equivalente no shadcn */
+    --color-surface-dark: var(--kurio-surface-dark);
+    --color-border-soft: var(--kurio-border-soft);
+    --color-text-accent: var(--kurio-text-accent);
+    --color-text-secondary: var(--kurio-text-secondary);
+
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+    color-scheme: dark;
+
+    /* Valores crus do Figma */
+    --kurio-ink: #140d0a;
+    --kurio-surface-card: #241612;
+    --kurio-surface-dark: #38220f;
+    --kurio-border: #3f2319;
+    --kurio-border-soft: #55321f;
+    --kurio-primary: #d28a4c;
+    --kurio-text-accent: #e89b55;
+    --kurio-secondary: #b39463;
+    --kurio-text-secondary: #cfb28c;
+    --kurio-text-primary: #f7f3ec;
+
+    /* Mapeamento para os nomes do shadcn */
+    --background: var(--kurio-ink);
+    --foreground: var(--kurio-text-primary);
+    --card: var(--kurio-surface-card);
+    --card-foreground: var(--kurio-text-primary);
+    --popover: var(--kurio-surface-card);
+    --popover-foreground: var(--kurio-text-primary);
+    --primary: var(--kurio-primary);
+    --primary-foreground: var(--kurio-ink);
+    --secondary: var(--kurio-surface-dark);
+    --secondary-foreground: var(--kurio-text-primary);
+    --muted: var(--kurio-surface-dark);
+    --muted-foreground: var(--kurio-text-secondary);
+    --accent: var(--kurio-surface-dark);
+    --accent-foreground: var(--kurio-text-accent);
+    --destructive: #ef6b5a;
+    --border: var(--kurio-border);
+    --input: var(--kurio-border-soft);
+    --ring: var(--kurio-text-accent);
+    --radius: 0.5rem;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        @apply font-sans;
+    }
+    body {
+        @apply bg-background text-foreground antialiased;
+    }
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+    /* Foco visível só para teclado (exigência de acessibilidade do desafio) */
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-ring;
+    }
+    /* Respeita quem pediu menos animação no sistema operacional */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
