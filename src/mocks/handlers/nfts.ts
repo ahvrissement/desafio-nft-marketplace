@@ -28,6 +28,16 @@ function normalize(text: string): string {
   return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 }
 
+// Object.fromEntries pegaria só o ÚLTIMO valor de um parâmetro repetido.
+// category e network podem vir várias vezes (?network=ethereum&network=solana).
+function searchParamsToObject(searchParams: URLSearchParams) {
+  const all = (key: string) => {
+    const values = searchParams.getAll(key)
+    return values.length > 0 ? values : undefined
+  }
+  return { ...Object.fromEntries(searchParams), category: all('category'), network: all('network') }
+}
+
 function filterNfts(nfts: readonly Nft[], query: NftListQuery): Nft[] {
   // "Recente" é relativo ao NFT mais novo do banco, não à data de hoje.
   // Assim o resultado não muda conforme o dia em que o teste roda.
@@ -36,8 +46,8 @@ function filterNfts(nfts: readonly Nft[], query: NftListQuery): Nft[] {
 
   return nfts.filter((nft) => {
     if (term && !normalize(`${nft.name} ${nft.collection}`).includes(term)) return false
-    if (query.category && nft.category !== query.category) return false
-    if (query.network && nft.network !== query.network) return false
+    if (query.category && !query.category.includes(nft.category)) return false
+    if (query.network && !query.network.includes(nft.network)) return false
     if (query.minPrice && compareEth(nft.price, query.minPrice) < 0) return false
     if (query.maxPrice && compareEth(nft.price, query.maxPrice) > 0) return false
     if (query.tab === 'new' && newest - Date.parse(nft.listedAt) > NEW_WINDOW_MS) return false
@@ -66,6 +76,7 @@ function toSummary(nft: Nft): NftSummary {
     network: nft.network,
     price: nft.price,
     compareAtPrice: nft.compareAtPrice,
+    rarity: nft.rarity,
     featured: nft.featured,
     version: nft.version,
     image: nft.images[0],
@@ -79,8 +90,7 @@ export const nftHandlers = [
 
     // A query string vira um objeto ({ page: "2", sort: "price-asc" }) e passa pelo
     // MESMO schema que o front usa. Parâmetro inválido → 400 com o campo exato.
-    const params = Object.fromEntries(new URL(request.url).searchParams)
-    const parsed = nftListQuerySchema.safeParse(params)
+    const parsed = nftListQuerySchema.safeParse(searchParamsToObject(new URL(request.url).searchParams))
     if (!parsed.success) return validationError(parsed.error)
 
     const query = parsed.data

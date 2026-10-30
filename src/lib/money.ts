@@ -71,6 +71,23 @@ export function compareEth(a: string, b: string): -1 | 0 | 1 {
   return diff < 0n ? -1 : diff > 0n ? 1 : 0
 }
 
+// Centavos de ETH (0.01) ↔ string. O slider de preço trabalha com inteiros
+// (2 a 1230), porque sliders não lidam bem com strings decimais.
+const WEI_PER_CENT = WEI_PER_ETH / 100n
+
+// "1.239" → 123 (trunca o que passar de 2 casas)
+export function toCents(amount: string): number {
+  return Number(toWei(amount) / WEI_PER_CENT)
+}
+
+// 123 → "1.23"
+export function fromCents(cents: number): string {
+  if (!Number.isSafeInteger(cents)) {
+    throw new Error(`Centavos precisam ser inteiros: ${cents}`)
+  }
+  return fromWei(BigInt(cents) * WEI_PER_CENT)
+}
+
 export function formatEth(amount: string): string {
   return `${fromWei(toWei(amount))} ETH`
 }

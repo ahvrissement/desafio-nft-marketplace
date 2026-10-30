@@ -1,10 +1,12 @@
 import {
   NETWORK_LABELS,
+  RARITIES,
   type Category,
   type Network,
   type Nft,
   type NftEdition,
   type NftImage,
+  type Rarity,
 } from '@/contracts/nft'
 import { multiplyEth, percentOfEth } from '@/lib/money'
 
@@ -26,7 +28,16 @@ function createRandom(seed: number) {
   }
   const int = (min: number, max: number) => min + Math.floor(next() * (max - min + 1))
   const pick = <T>(items: readonly T[]): T => items[int(0, items.length - 1)]
-  return { next, int, pick }
+  // Sorteio com pesos: weighted([['a', 3], ['b', 1]]) sai "a" 75% das vezes.
+  const weighted = <T>(entries: readonly (readonly [T, number])[]): T => {
+    let roll = next() * entries.reduce((total, [, weight]) => total + weight, 0)
+    for (const [value, weight] of entries) {
+      roll -= weight
+      if (roll < 0) return value
+    }
+    return entries[entries.length - 1][0]
+  }
+  return { next, int, pick, weighted }
 }
 
 type Random = ReturnType<typeof createRandom>
@@ -60,7 +71,14 @@ const ARTWORKS = {
 } as const
 type Artwork = keyof typeof ARTWORKS
 
-const RARITIES = ['Comum', 'Incomum', 'Raro', 'Lendário'] as const
+// Raridade realista: a maioria é comum. Com pesos iguais, metade dos cards
+// ganharia o selo "RARO/LENDÁRIO" no mobile; no Figma é 1 em cada 4.
+const RARITY_WEIGHTS: readonly (readonly [Rarity, number])[] = [
+  [RARITIES[0], 50], // Comum
+  [RARITIES[1], 30], // Incomum
+  [RARITIES[2], 15], // Raro
+  [RARITIES[3], 5], // Lendário
+]
 
 interface SeedInput {
   name: string
@@ -70,7 +88,7 @@ interface SeedInput {
   category: Category
   network: Network
   featured?: boolean
-  rarity?: (typeof RARITIES)[number]
+  rarity?: Rarity
   rating?: number
   reviewCount?: number
   salesCount?: number
@@ -157,6 +175,7 @@ function buildNft(input: SeedInput, index: number, random: Random): Nft {
   const royaltyBps = input.royaltyBps ?? random.int(5, 20) * 50 // 2,5% a 10%
   const networkLabel = NETWORK_LABELS[input.network]
   const number = input.name.split('#')[1]
+  const rarity = input.rarity ?? random.weighted(RARITY_WEIGHTS)
   return {
     id: slugify(input.name),
     name: input.name,
@@ -169,7 +188,8 @@ function buildNft(input: SeedInput, index: number, random: Random): Nft {
       `${input.name} é uma obra digital finalizada à mão da coleção ${art.collection}. Cada atributo fica armazenado nos metadados do token e verificado na ${networkLabel}.`,
       `A propriedade inclui a arte em alta resolução, lançamentos exclusivos para colecionadores e um registro permanente de procedência na rede. O criador recebe ${royaltyBps / 100}% de direitos autorais nas vendas secundárias.`,
     ],
-    attributes: [...art.attributes.slice(0, 2), input.rarity ?? random.pick(RARITIES)],
+    attributes: [...art.attributes.slice(0, 2), rarity],
+    rarity,
     contractAddress: `0x${hex(random, 40)}`,
     royaltyBps,
     images: galleryImages(input.name, input.artwork),

@@ -21,6 +21,7 @@
 
     /* Cores extras do Figma, sem equivalente no shadcn */
     --color-surface-dark: var(--kurio-surface-dark);
+    --color-surface-raised: var(--kurio-surface-raised);
     --color-border-soft: var(--kurio-border-soft);
     --color-text-accent: var(--kurio-text-accent);
     --color-text-secondary: var(--kurio-text-secondary);
@@ -59,6 +60,7 @@
     --kurio-ink: #140d0a;
     --kurio-surface-card: #241612;
     --kurio-surface-dark: #38220f;
+    --kurio-surface-raised: #2f1d15; /* gradiente dos cards no mobile */
     --kurio-border: #3f2319;
     --kurio-border-soft: #55321f;
     --kurio-primary: #d28a4c;
@@ -99,6 +101,31 @@
     max-width: calc(1200px + 2 * 1.5rem);
     margin-inline: auto;
     padding-inline: 1.5rem;
+}
+
+/*
+ * Skeleton com brilho ("shimmer"): um gradiente maior que o elemento que desliza.
+ * Com prefers-reduced-motion, a regra global lá embaixo zera a animação
+ * e o skeleton fica parado, sem piscar.
+ */
+@utility shimmer {
+    background-image: linear-gradient(
+        90deg,
+        var(--kurio-surface-raised) 25%,
+        var(--kurio-border) 50%,
+        var(--kurio-surface-raised) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
 }
 
 @layer base {

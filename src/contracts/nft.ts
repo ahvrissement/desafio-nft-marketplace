@@ -46,6 +46,11 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   utilidade: 'Utilidade',
 }
 
+// Raridade: vira o selo "RARO" nos cards do mobile e entra nos atributos do detalhe.
+export const RARITIES = ['Comum', 'Incomum', 'Raro', 'Lendário'] as const
+export const raritySchema = z.enum(RARITIES)
+export type Rarity = z.infer<typeof raritySchema>
+
 // Abas acima do grid ("Todos os NFTs", "Novos lançamentos", "Em alta")
 export const NFT_TABS = ['all', 'new', 'trending'] as const
 export const nftTabSchema = z.enum(NFT_TABS)
@@ -95,6 +100,7 @@ export const nftSchema = z.object({
   summary: z.string(), // "Sobre este NFT"
   description: z.array(z.string()), // parágrafos da aba "Detalhes do NFT"
   attributes: z.array(z.string()),
+  rarity: raritySchema,
   contractAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
   royaltyBps: z.number().int().min(0).max(10_000), // 500 = 5%
   images: z.array(nftImageSchema).min(1),
@@ -126,6 +132,7 @@ export const nftSummarySchema = nftSchema
     network: true,
     price: true,
     compareAtPrice: true,
+    rarity: true,
     featured: true,
     version: true,
   })
@@ -140,11 +147,13 @@ export const NFT_PAGE_SIZE = 9 // grid 3×3 do Figma
 
 // Os parâmetros chegam pela query string, onde tudo é texto.
 // z.coerce.number() converte "2" em 2 antes de validar.
+// category e network são de MÚLTIPLA escolha (no Figma são checkboxes):
+// ?category=musica&category=arte-3d → ['musica', 'arte-3d'].
 export const nftListQuerySchema = z
   .object({
     q: z.string().trim().max(80).optional(),
-    category: categorySchema.optional(),
-    network: networkSchema.optional(),
+    category: z.array(categorySchema).optional(),
+    network: z.array(networkSchema).optional(),
     minPrice: ethAmountSchema.optional(),
     maxPrice: ethAmountSchema.optional(),
     tab: nftTabSchema.default('all'),

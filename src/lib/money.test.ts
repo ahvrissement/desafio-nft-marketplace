@@ -4,10 +4,12 @@ import {
   addEth,
   compareEth,
   formatEth,
+  fromCents,
   fromWei,
   multiplyEth,
   percentOfEth,
   subtractEth,
+  toCents,
   toWei,
 } from './money'
 
@@ -53,6 +55,14 @@ describe('money', () => {
     expect(compareEth('1.19', '1.2')).toBe(-1)
     expect(compareEth('1.10', '1.1')).toBe(0)
     expect(['1.99', '0.39', '1.19'].sort(compareEth)).toEqual(['0.39', '1.19', '1.99'])
+  })
+
+  it('converte centavos de ETH (usado pelo slider)', () => {
+    expect(toCents('12.30')).toBe(1230)
+    expect(toCents('0.02')).toBe(2)
+    expect(toCents('1.239')).toBe(123) // trunca
+    expect(fromCents(1230)).toBe('12.30')
+    expect(fromCents(5)).toBe('0.05')
   })
 
   it('formata para exibição', () => {

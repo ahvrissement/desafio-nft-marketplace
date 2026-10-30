@@ -43,6 +43,9 @@ export const http = axios.create({
   baseURL: '/api',
   timeout: 10_000,
   headers: { Accept: 'application/json' },
+  // Arrays viram parâmetros repetidos: { network: ['a', 'b'] } → ?network=a&network=b.
+  // O padrão do Axios seria ?network[]=a&network[]=b, que o nosso mock não espera.
+  paramsSerializer: { indexes: null },
 })
 
 // Interceptor de RESPOSTA: roda em toda resposta com erro, antes de chegar em quem chamou.

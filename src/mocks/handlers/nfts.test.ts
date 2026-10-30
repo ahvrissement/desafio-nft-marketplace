@@ -72,6 +72,15 @@ describe('GET /api/nfts', () => {
     }
   })
 
+  it('aceita várias categorias e redes ao mesmo tempo', async () => {
+    const result = await list('?category=musica&category=arte-3d&network=ethereum&network=polygon')
+    expect(result.total).toBeGreaterThan(0)
+    for (const nft of result.items) {
+      expect(['musica', 'arte-3d']).toContain(nft.category)
+      expect(['ethereum', 'polygon']).toContain(nft.network)
+    }
+  })
+
   it('ordena por preço', async () => {
     const { items } = await list('?sort=price-asc')
     const prices = items.map((nft) => nft.price)

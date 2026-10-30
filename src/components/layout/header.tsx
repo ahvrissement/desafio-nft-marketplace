@@ -3,9 +3,9 @@ import type { ReactNode } from 'react'
 
 import cartIcon from '@/assets/icons/cart.svg'
 import loginIcon from '@/assets/icons/login.svg'
-import searchIcon from '@/assets/icons/search.svg'
 import { ComingSoon } from '@/components/coming-soon'
 import { Button } from '@/components/ui/button'
+import { HeaderSearch } from '@/features/catalog/components/header-search'
 import { cn } from '@/lib/utils'
 
 // Telas do fluxo de compra: no Figma, nelas o item ativo é "Mercado" e o header
@@ -84,10 +84,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-7">
-            {/* A busca é ligada à URL no passo 3b */}
-            <button type="button" aria-label="Buscar NFTs" className="grid size-6 place-items-center">
-              <img src={searchIcon} alt="" />
-            </button>
+            <HeaderSearch />
 
             <button
               type="button"
