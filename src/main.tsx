@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { authQueries, endSession } from '@/features/auth/queries'
 import { TOKEN_STORAGE_KEY, getToken } from '@/features/auth/token-store'
+import { MOCKS_ENABLED } from '@/lib/env'
 import { setSessionExpiredHandler } from '@/lib/http'
 import { queryClient } from '@/lib/query-client'
 import './index.css'
@@ -59,6 +60,7 @@ window.addEventListener('storage', (event) => {
 // requisições escapariam para a rede real e dariam 404.
 // O import() dinâmico deixa o código do mock num arquivo JS separado.
 async function enableMocking() {
+  if (!MOCKS_ENABLED) return
   const { worker } = await import('./mocks/browser')
   await worker.start({
     quiet: import.meta.env.PROD,

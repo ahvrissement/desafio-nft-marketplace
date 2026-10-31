@@ -9,7 +9,7 @@ import { createSeedNfts, createSeedUsers, createSeedWallets } from './seed'
 const STORAGE_KEY = 'kurio:mock-db'
 // Mude este número ao alterar o formato do banco: dados antigos salvos
 // no navegador são descartados em vez de quebrar o app.
-const SCHEMA_VERSION = 8 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos · 7: carrinhos · 8: carteiras, pedidos e cenários
+const SCHEMA_VERSION = 9 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos · 7: carrinhos · 8: carteiras, pedidos e cenários · 9: cenários de rede
 
 export interface DbUser {
   id: string
@@ -50,12 +50,21 @@ export interface DbOrder extends Order {
 
 // Cenários: como o mock se comporta. O painel de cenários (e os testes) mudam isto.
 export interface DbScenarios {
+  // Rede (vale para toda a API, menos as rotas __dev):
+  latency: 'normal' | 'slow' | 'variable' // normal 100–400ms · lenta 2,5s · variável 0,1–3s (fora de ordem)
+  failure: 'none' | 'offline' | 'server-error' | 'unavailable' | 'timeout'
   walletConnect: 'approve' | 'decline'
   payment: 'confirm' | 'decline'
   orderTimeout: boolean // cria o pedido, mas demora mais que o timeout do cliente para responder
 }
 
-export const DEFAULT_SCENARIOS: DbScenarios = { walletConnect: 'approve', payment: 'confirm', orderTimeout: false }
+export const DEFAULT_SCENARIOS: DbScenarios = {
+  latency: 'normal',
+  failure: 'none',
+  walletConnect: 'approve',
+  payment: 'confirm',
+  orderTimeout: false,
+}
 
 export interface DbState {
   schemaVersion: number

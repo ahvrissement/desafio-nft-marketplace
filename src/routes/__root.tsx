@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Outlet, createRootRouteWithContext, useMatches } from '@tanstack/react-router'
+import { lazy, Suspense } from 'react'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import { Footer } from '@/components/layout/footer'
@@ -10,7 +11,13 @@ import { NotFoundPage } from '@/components/not-found-page'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import { authSearchSchema } from '@/features/auth/search'
+import { RealtimeBridge } from '@/features/realtime/realtime-bridge'
+import { MOCKS_ENABLED } from '@/lib/env'
 import { cn } from '@/lib/utils'
+
+// Painel de cenários: só com o MSW ligado, e carregado sob demanda
+// (fica fora do bundle principal).
+const ScenariosPanel = MOCKS_ENABLED ? lazy(() => import('@/features/scenarios/scenarios-panel')) : null
 
 // "Contexto" do router: objetos que toda rota recebe nos seus loaders.
 // Passamos o queryClient para que uma rota possa pré-carregar dados
@@ -68,6 +75,13 @@ function RootLayout() {
       {mobileTab && <MobileTabBar active={mobileTab} />}
 
       <AuthDialog />
+      {/* Socket.IO: aplica nft.updated / order.updated no cache (não desenha nada) */}
+      <RealtimeBridge />
+      {ScenariosPanel && (
+        <Suspense>
+          <ScenariosPanel />
+        </Suspense>
+      )}
       {/* Avisos (toasts) com aria-live: o leitor de tela anuncia sem roubar o foco */}
       <Toaster position="top-center" />
 

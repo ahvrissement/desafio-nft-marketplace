@@ -3,6 +3,7 @@ import { WALLET_PROVIDER_LABELS, type CreateOrderInput, type Order, type Quote }
 import { getOrCreateCart, toCartResponse } from './cart'
 import { randomToken } from './crypto'
 import { readDb, writeDb, type DbOrder } from './db'
+import { emitNftUpdated, emitOrderUpdated } from './realtime'
 
 // Quanto tempo a "rede" leva para decidir o pagamento.
 export const SETTLE_DELAY_MS = 2_500
@@ -75,6 +76,10 @@ export function createOrder(userId: string, input: CreateOrderInput, quote: Quot
   writeDb((db) => {
     db.orders.push(order)
   })
+  emitOrderUpdated(toOrderResponse(order), userId)
+  // A "rede" decide sozinha depois de alguns segundos (e avisa por Socket.IO).
+  // Se a página recarregar antes, a próxima leitura do pedido decide (settleIfDue).
+  setTimeout(() => settleIfDue(order.id), SETTLE_DELAY_MS)
   return order
 }
 
@@ -124,5 +129,16 @@ export function settleIfDue(orderId: string): boolean {
       cart.version += 1
     }
   })
+
+  // Avisa quem está com a tela aberta: o dono (order.updated) e todo mundo
+  // (nft.updated: o estoque das edições compradas baixou).
+  const settled = readDb().orders.find((item) => item.id === orderId)!
+  emitOrderUpdated(toOrderResponse(settled), settled.userId)
+  if (settled.status === 'confirmed') {
+    for (const nftId of new Set(settled.items.map((item) => item.nftId))) {
+      const nft = readDb().nfts.find((item) => item.id === nftId)
+      if (nft) emitNftUpdated(nft)
+    }
+  }
   return true
 }
