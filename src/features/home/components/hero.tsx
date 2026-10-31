@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import arrowIcon from '@/assets/icons/arrow-right-long.svg'
 import { MaskIcon } from '@/components/mask-icon'
 import { useSwipe } from '@/hooks/use-swipe'
+import { touchTargetClass } from '@/lib/ui-classes'
 import { cn } from '@/lib/utils'
 
 import { HERO_SLIDES, type HeroSlide } from '../content'
@@ -176,7 +177,8 @@ function Slide({ slide, index, total, active }: SlideProps) {
           // anunciaria aria-current="page" num botão de ação. Com ele, só em /#mercado.
           activeOptions={{ includeHash: true }}
           className={cn(
-            // Mobile: link de texto laranja com seta. Desktop: botão do Figma (140×40).
+            // Mobile: link de texto laranja com seta (área de toque ampliada). Desktop: botão do Figma (140×40).
+            touchTargetClass,
             'mt-0.5 flex w-fit items-center gap-2 text-xs leading-4 font-bold text-text-accent uppercase',
             'lg:mt-8 lg:h-10 lg:w-35 lg:justify-center lg:rounded-[5px] lg:bg-primary lg:text-base lg:font-semibold lg:text-ink lg:hover:bg-text-accent',
           )}

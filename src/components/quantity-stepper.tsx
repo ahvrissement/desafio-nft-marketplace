@@ -31,7 +31,8 @@ export function QuantityStepper({ value, min = 1, max, onChange, size = 'lg', la
   const buttonClass = cn(
     'grid place-items-center rounded-full bg-primary text-ink transition-opacity',
     'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-    size === 'lg' ? 'h-12.5 w-8.25 text-2xl' : 'h-7.5 w-5 rounded-md text-base',
+    // sm: 20px de largura no desenho; o ::after leva a área de toque a 28px (WCAG 2.5.8)
+    size === 'lg' ? 'h-12.5 w-8.25 text-2xl' : 'relative h-7.5 w-5 rounded-md text-base after:absolute after:inset-y-0 after:-inset-x-1',
   )
 
   return (

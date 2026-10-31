@@ -8,6 +8,7 @@ import youtubeIcon from '@/assets/icons/social-youtube.svg'
 import { ComingSoon } from '@/components/coming-soon'
 import type { Category } from '@/contracts/nft'
 import { NewsletterForm } from '@/features/newsletter/newsletter-form'
+import { touchTargetClass } from '@/lib/ui-classes'
 import { cn } from '@/lib/utils'
 
 const FEATURES = [
@@ -62,7 +63,7 @@ const LINK_COLUMNS: { title: string; links: FooterLink[] }[] = [
 ]
 
 function FooterLinkItem({ link }: { link: FooterLink }) {
-  const className = 'hover:text-text-accent hover:underline'
+  const className = cn(touchTargetClass, 'hover:text-text-accent hover:underline')
   if (link.to) return <Link to={link.to} className={className}>{link.label}</Link>
   if (link.category) {
     return (
@@ -130,10 +131,10 @@ export function Footer() {
           criadores e cultura
         </p>
         {/* Links de contato têm comportamento coerente: abrem o e-mail e o discador */}
-        <a href="mailto:contato@email.com" className="hover:text-text-accent">
+        <a href="mailto:contato@email.com" className={cn(touchTargetClass, 'hover:text-text-accent')}>
           contato@email.com
         </a>
-        <a href="tel:+551140028922" className="hover:text-text-accent">
+        <a href="tel:+551140028922" className={cn(touchTargetClass, 'hover:text-text-accent')}>
           +55 11 4002 8922
         </a>
       </div>
@@ -169,9 +170,16 @@ export function Footer() {
           </div>
           <div className="flex flex-col gap-3">
             <h2 className="text-lg leading-4 font-bold">Carteiras compatíveis</h2>
-            <p className="flex h-6.5 items-center justify-center rounded-md border border-border-soft bg-surface-dark pl-2 text-[9px] font-bold tracking-[0.1px] whitespace-pre text-text-accent">
-              {'METAMASK  •  WALLETCONNECT  •  COINBASE'}
-            </p>
+            {/* Lista de verdade (o leitor de tela anuncia "3 itens", sem ler os "•").
+                11px, e não os 9px do Figma: abaixo disso o texto fica ilegível.
+                O "•" vem do CSS e fica junto do item seguinte: quebra limpa na coluna estreita. */}
+            <ul className="flex min-h-6.5 flex-wrap items-center justify-center gap-x-1.5 rounded-md border border-border-soft bg-surface-dark px-2 py-1 text-[11px] font-bold tracking-[0.1px] text-text-accent [&>li+li]:before:mr-1.5 [&>li+li]:before:content-['•']">
+              {['MetaMask', 'WalletConnect', 'Coinbase'].map((wallet) => (
+                <li key={wallet} className="whitespace-nowrap uppercase">
+                  {wallet}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
