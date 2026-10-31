@@ -1,15 +1,15 @@
+import type { Order, Wallet } from '@/contracts/checkout'
 import type { Nft } from '@/contracts/nft'
 
-import { createSeedNfts, createSeedUsers } from './seed'
+import { createSeedNfts, createSeedUsers, createSeedWallets } from './seed'
 
 // O "banco de dados" do backend falso: um objeto em memória, espelhado no
 // localStorage para sobreviver ao F5 (o desafio exige persistência).
-// Carrinhos e pedidos entram aqui nos próximos passos.
 
 const STORAGE_KEY = 'kurio:mock-db'
 // Mude este número ao alterar o formato do banco: dados antigos salvos
 // no navegador são descartados em vez de quebrar o app.
-const SCHEMA_VERSION = 6 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos
+const SCHEMA_VERSION = 8 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos · 7: carrinhos · 8: carteiras, pedidos e cenários
 
 export interface DbUser {
   id: string
@@ -26,6 +26,37 @@ export interface DbSession {
   expiresAt: string // ISO
 }
 
+export interface DbCartItem {
+  id: string
+  nftId: string
+  editionId: string
+  quantity: number
+  priceAtAdd: string // preço quando entrou no carrinho (para avisar se mudar)
+}
+
+export interface DbCart {
+  id: string
+  version: number
+  items: DbCartItem[]
+  couponCode: string | null
+}
+
+export interface DbOrder extends Order {
+  userId: string
+  quoteId: string
+  settleAt: string // quando a "rede" decide (pendente até lá)
+  outcome: 'confirmed' | 'declined' // decidido na criação, pelo cenário ativo
+}
+
+// Cenários: como o mock se comporta. O painel de cenários (e os testes) mudam isto.
+export interface DbScenarios {
+  walletConnect: 'approve' | 'decline'
+  payment: 'confirm' | 'decline'
+  orderTimeout: boolean // cria o pedido, mas demora mais que o timeout do cliente para responder
+}
+
+export const DEFAULT_SCENARIOS: DbScenarios = { walletConnect: 'approve', payment: 'confirm', orderTimeout: false }
+
 export interface DbState {
   schemaVersion: number
   nfts: Nft[]
@@ -33,6 +64,13 @@ export interface DbState {
   users: DbUser[]
   sessions: DbSession[]
   favorites: Record<string, string[]> // userId → ids de NFTs
+  // "user:<id>" para quem está logado, "guest:<id>" para visitantes
+  carts: Record<string, DbCart>
+  wallets: Record<string, Wallet[]> // userId → carteiras
+  orders: DbOrder[]
+  // "userId:chave" → qual pedido aquela Idempotency-Key criou, e com que conteúdo
+  idempotency: Record<string, { bodyHash: string; orderId: string }>
+  scenarios: DbScenarios
 }
 
 function createInitialState(): DbState {
@@ -44,6 +82,11 @@ function createInitialState(): DbState {
     sessions: [],
     // A Ana já tem dois favoritos: dá para ver a lista logo no primeiro login.
     favorites: { 'user-ana': ['sage-nomad-009', 'golden-beat-207'] },
+    carts: {},
+    wallets: createSeedWallets(),
+    orders: [],
+    idempotency: {},
+    scenarios: { ...DEFAULT_SCENARIOS },
   }
 }
 

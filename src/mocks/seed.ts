@@ -11,6 +11,8 @@ import {
 } from '@/contracts/nft'
 import { multiplyEth, percentOfEth } from '@/lib/money'
 
+import type { Wallet } from '@/contracts/checkout'
+
 import type { DbUser } from './db'
 
 // Dados iniciais do "banco" falso.
@@ -281,4 +283,17 @@ export function createSeedUsers(): DbUser[] {
       avatarUrl: null,
     },
   ]
+}
+
+// Carteiras do Figma mobile ("Principal" e "Reserva"). Endereços fictícios.
+export function createSeedWallets(): Record<string, Wallet[]> {
+  return {
+    'user-ana': [
+      { id: 'wallet-ana-principal', kind: 'primary', label: 'Principal', provider: 'metamask', network: 'ethereum', address: '0xa91f3c2b7d4e5f60718293a4b5c6d7e8f90ae82c', ens: null },
+      { id: 'wallet-ana-reserva', kind: 'secondary', label: 'Reserva', provider: 'coinbase', network: 'polygon', address: '0x5b2e8d1c4a7f90b3e6d2c5a8f1b4e7d0c3a69f17', ens: 'nova.kurio.eth' },
+    ],
+    'user-bruno': [
+      { id: 'wallet-bruno-principal', kind: 'primary', label: 'Principal', provider: 'walletconnect', network: 'ethereum', address: '0x7c41e9b2d5f8a3c6e9b2d5f8a1c4e7b0d3f6a904', ens: 'bruno.kurio.eth' },
+    ],
+  }
 }

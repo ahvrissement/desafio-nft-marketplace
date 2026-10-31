@@ -67,9 +67,9 @@ export function MobileTabBar({ active }: { active: MobileTab }) {
 
         <TabItem position={{ right: '24.64%' }} active={active === 'cart'}>
           {(props) => (
-            <button type="button" aria-label="Carrinho" {...props}>
+            <Link to="/cart" aria-label="Carrinho" {...props}>
               <MaskIcon src={shopIcon} width={20} height={20} />
-            </button>
+            </Link>
           )}
         </TabItem>
 

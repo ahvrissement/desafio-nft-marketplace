@@ -38,5 +38,7 @@ export function startSession(queryClient: QueryClient, user: User) {
 export function endSession(queryClient: QueryClient) {
   clearToken()
   queryClient.removeQueries({ queryKey: ['me'] })
+  // O próximo carrinho é de um visitante novo (vazio), não o de antes do login.
+  queryClient.removeQueries({ queryKey: ['cart'] })
   queryClient.setQueryData(authQueries.session().queryKey, null)
 }

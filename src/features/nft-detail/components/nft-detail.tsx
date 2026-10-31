@@ -1,22 +1,25 @@
-import { Link, getRouteApi, useCanGoBack, useRouter } from '@tanstack/react-router'
+import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
-import arrowLeftIcon from '@/assets/icons/arrow-left.svg'
 import heartOutlineIcon from '@/assets/icons/heart-outline.svg'
 import heartFilledIcon from '@/assets/icons/tab-heart.svg'
 import starIcon from '@/assets/icons/star.svg'
 import shopIcon from '@/assets/icons/tab-shop.svg'
+import { BackButton } from '@/components/back-button'
 import { MaskIcon } from '@/components/mask-icon'
+import { QuantityStepper } from '@/components/quantity-stepper'
 import { MAX_QUANTITY_PER_ORDER, maxQuantityFor, type Nft } from '@/contracts/nft'
+import { useCartActions } from '@/features/cart/use-cart'
 import { useToggleFavorite } from '@/features/favorites/use-favorites'
 import { formatEth, multiplyEth } from '@/lib/money'
+import { circleButtonClass } from '@/lib/ui-classes'
 import { cn } from '@/lib/utils'
 
 import { editionAvailabilityText, formatRating } from '../format'
 import { EditionPicker } from './edition-picker'
 import { NftGallery } from './nft-gallery'
 import { NftInfoTabs } from './nft-info-tabs'
-import { QuantityStepper } from './quantity-stepper'
 import { RatingStars } from './rating-stars'
 import { RelatedNfts } from './related-nfts'
 import { ShareLinks } from './share-links'
@@ -50,6 +53,21 @@ export function NftDetail({ nft }: { nft: Nft }) {
       replace: true, // trocar de edição não deveria encher o histórico do "voltar"
       resetScroll: false,
     })
+
+  // "Comprar": adiciona e vai para o carrinho. Ícone de carrinho (mobile):
+  // adiciona e fica. O estoque é conferido de novo pela API (409 = aviso).
+  const { add } = useCartActions()
+  const goTo = useNavigate()
+  const addToCart = (then: 'go' | 'stay') =>
+    add.mutate(
+      { nftId: nft.id, editionId: edition.id, quantity },
+      {
+        onSuccess: () => {
+          if (then === 'go') void goTo({ to: '/cart' })
+          else toast.success(`${nft.name} (${edition.label}) foi para o carrinho.`, { action: { label: 'Ver carrinho', onClick: () => void goTo({ to: '/cart' }) } })
+        },
+      },
+    )
 
   // Preço "de" só faz sentido na edição padrão (é o preço dos cards).
   const compareAtPrice = edition.id === nft.defaultEditionId ? nft.compareAtPrice : null
@@ -135,7 +153,7 @@ export function NftDetail({ nft }: { nft: Nft }) {
               {/* Posição absoluta: aparece no espaço entre as linhas, sem empurrar nada */}
               <QuantityLimitMessage show={atLimit} max={maxQuantity} className="absolute top-full left-0" />
               <div className="flex gap-2">
-                <BuyButton soldOut={soldOut} className="h-10 w-32.5 rounded-[5px] text-sm uppercase">
+                <BuyButton soldOut={soldOut} pending={add.isPending} onClick={() => addToCart('go')} className="h-10 w-32.5 rounded-[5px] text-sm uppercase">
                   Comprar
                 </BuyButton>
                 <FavoriteButton nft={nft} />
@@ -169,14 +187,15 @@ export function NftDetail({ nft }: { nft: Nft }) {
         </div>
         <QuantityLimitMessage show={atLimit} max={maxQuantity} />
         <div className="mt-5 flex gap-3">
-          <BuyButton soldOut={soldOut} className="h-15 w-49 rounded-full bg-linear-to-r from-primary to-[#b07440] text-base">
+          <BuyButton soldOut={soldOut} pending={add.isPending} onClick={() => addToCart('go')} className="h-15 w-49 rounded-full bg-linear-to-r from-primary to-[#b07440] text-base">
             Comprar NFT
           </BuyButton>
           <button
             type="button"
-            disabled
-            aria-label="Adicionar ao carrinho"
-            className="grid size-15 place-items-center rounded-full bg-surface-raised text-text-subtle disabled:cursor-not-allowed"
+            disabled={soldOut || add.isPending}
+            onClick={() => addToCart('stay')}
+            aria-label={`Adicionar ${nft.name} ao carrinho`}
+            className="grid size-15 place-items-center rounded-full bg-surface-raised text-text-subtle disabled:cursor-not-allowed disabled:opacity-50"
           >
             <img src={shopIcon} alt="" />
           </button>
@@ -223,16 +242,25 @@ function QuantityLimitMessage({ show, max, className }: { show: boolean; max: nu
   )
 }
 
-// A compra depende do carrinho, que vem no próximo passo. Até lá o botão fica
-// desabilitado em vez de fingir que funciona.
-function BuyButton({ soldOut, className, children }: { soldOut: boolean; className?: string; children: string }) {
+interface BuyButtonProps {
+  soldOut: boolean
+  pending: boolean
+  onClick: () => void
+  className?: string
+  children: string
+}
+
+function BuyButton({ soldOut, pending, onClick, className, children }: BuyButtonProps) {
   return (
     <button
       type="button"
-      disabled
+      // Esgotada: `disabled` de verdade (não há o que fazer). Enviando: também,
+      // para um clique duplo não adicionar duas vezes.
+      disabled={soldOut || pending}
+      onClick={onClick}
       className={cn('bg-primary font-bold text-ink disabled:cursor-not-allowed disabled:opacity-60', className)}
     >
-      {soldOut ? 'Esgotada' : children}
+      {soldOut ? 'Esgotada' : pending ? 'Adicionando…' : children}
     </button>
   )
 }
@@ -259,33 +287,18 @@ function FavoriteButton({ nft }: { nft: Nft }) {
 }
 
 function MobileTopBar({ nft }: { nft: Nft }) {
-  const router = useRouter()
-  const canGoBack = useCanGoBack()
   const favorites = useToggleFavorite()
   const favorite = favorites.isFavorite(nft.id)
 
-  const circleClass =
-    'relative grid size-8.75 place-items-center rounded-full border border-border bg-surface-raised text-foreground after:absolute after:-inset-1 disabled:cursor-not-allowed'
-
   return (
     <div className="flex items-center justify-between">
-      {/* Acesso direto (link colado, nova aba): não há "voltar" no histórico,
-          então o botão leva ao catálogo em vez de sair do site. */}
-      {canGoBack ? (
-        <button type="button" aria-label="Voltar" onClick={() => router.history.back()} className={circleClass}>
-          <MaskIcon src={arrowLeftIcon} width={20} height={20} />
-        </button>
-      ) : (
-        <Link to="/" aria-label="Voltar ao catálogo" className={circleClass}>
-          <MaskIcon src={arrowLeftIcon} width={20} height={20} />
-        </Link>
-      )}
+      <BackButton />
       <button
         type="button"
         aria-label={`Favoritar ${nft.name}`}
         aria-pressed={favorite}
         onClick={() => favorites.toggle(nft.id, nft.name)}
-        className={cn(circleClass, 'text-text-accent')}
+        className={cn(circleButtonClass, 'text-text-accent')}
       >
         <MaskIcon src={favorite ? heartFilledIcon : heartOutlineIcon} width={16} height={14.2} />
       </button>

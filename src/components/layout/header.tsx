@@ -4,13 +4,14 @@ import type { ReactNode } from 'react'
 import cartIcon from '@/assets/icons/cart.svg'
 import { ComingSoon } from '@/components/coming-soon'
 import { AccountMenu } from '@/features/auth/components/account-menu'
+import { useCart } from '@/features/cart/use-cart'
 import { HeaderSearch } from '@/features/catalog/components/header-search'
 import { cn } from '@/lib/utils'
 
 // Telas do fluxo de compra: no Figma, nelas o item ativo é "Mercado" e o header
 // não tem a linha divisória. Nas demais (Início, Perfil, Carteiras, Login) o ativo
 // é "Início" e a linha aparece.
-const MARKET_PATHS = ['/nft', '/cart', '/checkout']
+const MARKET_PATHS = ['/nft', '/cart', '/checkout', '/orders']
 
 type Section = 'home' | 'market'
 
@@ -23,9 +24,9 @@ function useActiveSection(): Section {
 
 export function Header() {
   const section = useActiveSection()
-  // Passa a vir do carrinho no passo do carrinho. O ": number" é necessário porque,
-  // com a constante 0, o TS sabe que "cartCount === 1" nunca seria verdade e acusa erro.
-  const cartCount: number = 0
+  // Soma das quantidades, calculada pela API (cart.summary.itemCount).
+  const { data: cart } = useCart()
+  const cartCount = cart?.summary.itemCount ?? 0
 
   return (
     // Só no desktop: no mobile a navegação é a MobileTabBar.
@@ -85,8 +86,8 @@ export function Header() {
           <div className="flex items-center gap-7">
             <HeaderSearch />
 
-            <button
-              type="button"
+            <Link
+              to="/cart"
               aria-label={`Carrinho, ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}
               className="relative grid h-6 w-8.5 place-items-start"
             >
@@ -99,7 +100,7 @@ export function Header() {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
 
             <AccountMenu />
           </div>

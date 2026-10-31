@@ -10,6 +10,10 @@ interface QuantityStepperProps {
   // "lg": desktop (círculos de 33×49 do Figma). "sm": barra de compra do mobile.
   size?: 'sm' | 'lg'
   label?: string
+  // Rótulo só para o leitor de tela (no carrinho: "Quantidade de Emerald Ape #042")
+  hideLabel?: boolean
+  // Esta linha está salvando: o número fica "ocupado" para o leitor de tela
+  busy?: boolean
   className?: string
 }
 
@@ -19,7 +23,7 @@ interface QuantityStepperProps {
 // `disabled` perde o foco: quem chega ao máximo apertando Enter no "+" seria
 // jogado para o começo da página. Com aria-disabled, o foco fica, o leitor de
 // tela diz "indisponível" e o clique é ignorado no handler.
-export function QuantityStepper({ value, min = 1, max, onChange, size = 'lg', label = 'Quantidade', className }: QuantityStepperProps) {
+export function QuantityStepper({ value, min = 1, max, onChange, size = 'lg', label = 'Quantidade', hideLabel = false, busy = false, className }: QuantityStepperProps) {
   const labelId = useId()
   const atMin = value <= min
   const atMax = value >= max
@@ -32,9 +36,9 @@ export function QuantityStepper({ value, min = 1, max, onChange, size = 'lg', la
 
   return (
     <div role="group" aria-labelledby={labelId} className={cn('flex items-center', className)}>
-      <span id={labelId} className={cn(size === 'lg' && 'sr-only', 'mr-2 text-[15px] font-bold')}>
+      <span id={labelId} className={cn((size === 'lg' || hideLabel) && 'sr-only', 'mr-2 text-[15px] font-bold')}>
         {label}
-        {size === 'sm' && '.'}
+        {size === 'sm' && !hideLabel && '.'}
       </span>
       <button
         type="button"
@@ -46,7 +50,7 @@ export function QuantityStepper({ value, min = 1, max, onChange, size = 'lg', la
         <span aria-hidden>−</span>
       </button>
       {/* <output> + aria-live: o leitor de tela anuncia o novo número a cada clique */}
-      <output aria-live="polite" className={cn('text-center tabular-nums', size === 'lg' ? 'w-12 text-xl' : 'w-8 text-xl font-bold')}>
+      <output aria-live="polite" aria-busy={busy || undefined} className={cn('text-center tabular-nums', size === 'lg' ? 'w-12 text-xl' : 'w-8 text-xl font-bold')}>
         {value}
       </output>
       <button

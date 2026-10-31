@@ -17,7 +17,10 @@ export const API_ERROR_CODES = [
   'INVALID_CREDENTIALS', // 401 e-mail ou senha incorretos no login
   'FORBIDDEN', // 403 logado, mas sem permissão para este recurso
   'NOT_FOUND', // 404
-  'CONFLICT', // 409 estado mudou (estoque, preço, e-mail já cadastrado, chave idempotente reutilizada)
+  'CONFLICT', // 409 estado mudou (estoque, e-mail já cadastrado)
+  'QUOTE_CHANGED', // 409 preço, estoque, cupom ou taxa mudaram desde a cotação: confirmar de novo
+  'IDEMPOTENCY_CONFLICT', // 409 a mesma Idempotency-Key com um pedido DIFERENTE
+  'WALLET_DECLINED', // 403 a carteira recusou a conexão (simulação)
   'INTERNAL_ERROR', // 500
   'SERVICE_UNAVAILABLE', // 503 falha transitória
 ] as const
