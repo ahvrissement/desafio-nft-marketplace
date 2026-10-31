@@ -33,7 +33,12 @@ export function ProfileLayout() {
               Carteiras
             </Link>
           </li>
-          {['Atividade', 'Lista de interesse', 'Ofertas', 'Arquivos baixados', 'Suporte'].map((label) => (
+          <li className="max-lg:hidden">
+            <Link to="/favorites" className={cn(linkClass, 'whitespace-nowrap')}>
+              Lista de interesse
+            </Link>
+          </li>
+          {['Atividade', 'Ofertas', 'Arquivos baixados', 'Suporte'].map((label) => (
             <li key={label} className="hidden lg:block">
               <ComingSoon className={cn(linkClass, 'text-text-subtle')}>{label}</ComingSoon>
             </li>

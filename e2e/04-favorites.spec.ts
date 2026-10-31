@@ -36,3 +36,33 @@ test.describe('favoritos', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
   })
 })
+
+test.describe('página de favoritos', () => {
+  test('lista, desfavoritar tira da lista e estado vazio; atalho no rodapé', async ({ page }) => {
+    await login(page, 'ana')
+    // Atalho do rodapé ("Lista de interesse")
+    await page.getByRole('navigation', { name: 'Meu perfil' }).getByRole('link', { name: 'Lista de interesse' }).click()
+    await expect(page).toHaveURL(/\/favorites$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Meus favoritos' })).toBeVisible()
+    // Seed: a Ana tem 2 favoritos
+    await expect(page.getByText('2 NFTs favoritados')).toBeVisible()
+
+    for (const name of ['Golden Beat #207', 'Sage Nomad #009']) {
+      await page.getByRole('button', { name: `Favoritar ${name}` }).click()
+      await expect(page.getByRole('link', { name })).toBeHidden()
+    }
+    await expect(page.getByRole('heading', { name: 'Você ainda não favoritou nenhum NFT' })).toBeVisible()
+  })
+
+  test('visitante no coração da barra inferior → login → volta para os favoritos @mobile', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 1440) >= 1024, 'a barra inferior só existe no mobile')
+    await open(page, '/')
+    await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Favoritos' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('E-mail').fill('ana@kurio.dev')
+    await dialog.getByLabel('Senha', { exact: true }).fill('Kurio@123')
+    await dialog.locator('button[type=submit]').click()
+    await expect(page).toHaveURL(/\/favorites$/)
+    await expect(page.getByText('2 NFTs favoritados')).toBeVisible()
+  })
+})

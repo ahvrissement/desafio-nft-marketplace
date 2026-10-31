@@ -42,12 +42,12 @@ export function MobileTabBar({ active }: { active: MobileTab }) {
           )}
         </TabItem>
 
-        {/* Favoritos, carrinho e perfil viram links quando essas rotas existirem */}
+        {/* Visitante: a rota /favorites é privada e pede login (e volta para lá). */}
         <TabItem position={{ left: '26.09%' }} active={active === 'favorites'}>
           {(props) => (
-            <button type="button" aria-label="Favoritos" {...props}>
+            <Link to="/favorites" aria-label="Favoritos" {...props}>
               <MaskIcon src={heartIcon} width={20} height={17.79} />
-            </button>
+            </Link>
           )}
         </TabItem>
 

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { nftSummarySchema } from './nft'
+
 // ---------------------------------------------------------------------------
 // Conta e sessão
 // ---------------------------------------------------------------------------
@@ -56,3 +58,7 @@ export const sessionResponseSchema = z.object({
 
 export const favoritesResponseSchema = z.object({ nftIds: z.array(z.string()) })
 export type FavoritesResponse = z.infer<typeof favoritesResponseSchema>
+
+// GET /api/me/favorites/nfts: os favoritos já no formato dos cards (a página
+// "Meus favoritos" não precisa buscar NFT por NFT).
+export const favoriteNftsResponseSchema = z.object({ items: z.array(nftSummarySchema) })

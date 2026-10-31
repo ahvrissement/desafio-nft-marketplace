@@ -72,7 +72,7 @@ function sortNfts(nfts: Nft[], sort: NftSort): Nft[] {
   }
 }
 
-function toSummary(nft: Nft): NftSummary {
+export function toSummary(nft: Nft): NftSummary {
   return {
     id: nft.id,
     name: nft.name,

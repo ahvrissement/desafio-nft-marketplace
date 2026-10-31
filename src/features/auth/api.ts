@@ -1,5 +1,6 @@
 import {
   authResponseSchema,
+  favoriteNftsResponseSchema,
   favoritesResponseSchema,
   sessionResponseSchema,
   type LoginInput,
@@ -31,6 +32,11 @@ export async function logout() {
 export async function fetchFavorites(signal?: AbortSignal) {
   const { nftIds } = await request(favoritesResponseSchema, { url: '/me/favorites', signal })
   return nftIds
+}
+
+export async function fetchFavoriteNfts(signal?: AbortSignal) {
+  const { items } = await request(favoriteNftsResponseSchema, { url: '/me/favorites/nfts', signal })
+  return items
 }
 
 export async function setFavorite(nftId: string, favorite: boolean) {

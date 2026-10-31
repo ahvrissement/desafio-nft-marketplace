@@ -1,32 +1,51 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { BackButton } from '@/components/back-button'
+import { SelectField, TextAreaField, TextField } from '@/components/form-fields'
 import type { User } from '@/contracts/auth'
 import { WALLET_PROVIDER_LABELS, WALLET_PROVIDERS, type Quote, type Wallet } from '@/contracts/checkout'
 import { NETWORK_LABELS, NETWORKS } from '@/contracts/nft'
+import { useAuthDialog } from '@/features/auth/use-auth-dialog'
 import { useSession } from '@/features/auth/use-session'
 import { formatEth } from '@/lib/money'
 
 import { readAttempt } from '../attempt'
+import { readDraft, saveDraft } from '../draft'
 import { checkoutFormSchema, defaultCheckoutValues, toOrderInput, type CheckoutForm } from '../form'
 import { checkoutQueries } from '../queries'
 import { usePlaceOrder } from '../use-place-order'
 import { useWalletConnection } from '../use-wallet-connection'
-import { SelectField, TextAreaField, TextField } from '@/components/form-fields'
 import { OrderSummary } from './order-summary'
 import { ReviewDialog } from './review-dialog'
 import { WalletSection } from './wallet-section'
 
 export function CheckoutPage() {
-  const { user } = useSession()
-  // A rota é protegida (beforeLoad), mas a sessão pode expirar aqui dentro:
-  // aí o aviso de sessão expirada aparece e o formulário espera o novo login.
-  if (!user) return <CheckoutSkeleton />
+  const { user, isPending } = useSession()
+  if (isPending) return <CheckoutSkeleton />
+  // A rota é protegida (beforeLoad), mas a sessão pode expirar AQUI DENTRO.
+  if (!user) return <SessionExpired />
   return <CheckoutLoader user={user} />
+}
+
+// O que foi preenchido está no rascunho: depois de entrar, volta tudo.
+function SessionExpired() {
+  const dialog = useAuthDialog()
+  return (
+    <div role="alert" className="page-container flex flex-col items-start gap-4 py-16">
+      <title>Pagamento | Kurio</title>
+      <h1 className="text-2xl font-bold">Sua sessão expirou</h1>
+      <p className="max-w-xl text-text-secondary">
+        Entre de novo para concluir a compra. Seu carrinho e o que você preencheu no pagamento foram guardados.
+      </p>
+      <button type="button" onClick={() => dialog.open('entrar', '/checkout')} className="rounded-[5px] bg-primary px-6 py-3 font-bold text-ink">
+        Entrar e continuar
+      </button>
+    </div>
+  )
 }
 
 function CheckoutLoader({ user }: { user: User }) {
@@ -67,7 +86,15 @@ interface CheckoutContentProps {
 
 function CheckoutContent({ user, wallets, quote, onRefetchQuote }: CheckoutContentProps) {
   const primary = wallets.find((wallet) => wallet.kind === 'primary') ?? wallets[0]
-  const form = useForm<CheckoutForm>({ resolver: zodResolver(checkoutFormSchema), defaultValues: defaultCheckoutValues(user, primary) })
+  // Começa pelo rascunho (se houver, e se for desta pessoa); senão, pela conta.
+  const form = useForm<CheckoutForm>({
+    resolver: zodResolver(checkoutFormSchema),
+    defaultValues: { ...defaultCheckoutValues(user, primary), ...readDraft(user.id) },
+  })
+  // Cada alteração vai para o rascunho. useWatch (sem `name`) observa o
+  // formulário inteiro; o efeito grava quando os valores mudam.
+  const draft = useWatch({ control: form.control })
+  useEffect(() => saveDraft(user.id, draft), [draft, user.id])
   const { errors } = form.formState
   const wallet = useWalletConnection()
   const [reviewing, setReviewing] = useState(false)

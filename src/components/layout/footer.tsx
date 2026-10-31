@@ -1,9 +1,12 @@
+import { Link } from '@tanstack/react-router'
+
 import facebookIcon from '@/assets/icons/social-facebook.svg'
 import instagramIcon from '@/assets/icons/social-instagram.svg'
 import linkedinIcon from '@/assets/icons/social-linkedin.svg'
 import twitterIcon from '@/assets/icons/social-twitter.svg'
 import youtubeIcon from '@/assets/icons/social-youtube.svg'
 import { ComingSoon } from '@/components/coming-soon'
+import type { Category } from '@/contracts/nft'
 import { NewsletterForm } from '@/features/newsletter/newsletter-form'
 import { cn } from '@/lib/utils'
 
@@ -25,13 +28,51 @@ const FEATURES = [
   },
 ]
 
-// Todos fora do escopo por enquanto. "Meu perfil" e as categorias
-// viram links quando essas telas existirem.
-const LINK_COLUMNS = [
-  { title: 'Meu perfil', links: ['Meu perfil', 'Minha coleção', 'Atividade', 'Estúdio do criador', 'Lista de interesse'] },
-  { title: 'Central de ajuda', links: ['Central de ajuda', 'Como comprar NFTs', 'Carteira e segurança', 'Política do mercado', 'Denunciar item'] },
-  { title: 'Coleções', links: ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Utilidade'] },
+// Cada link leva a uma tela que existe, ou fica como "Em breve" (fora do
+// escopo do README: coleção, atividade, estúdio e central de ajuda).
+//   to: 'profile' | 'favorites' → rota do app
+//   category                    → catálogo já filtrado (filtro na URL)
+type FooterLink = { label: string; to?: '/profile' | '/favorites'; category?: Category }
+
+const LINK_COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'Meu perfil',
+    links: [
+      { label: 'Meu perfil', to: '/profile' },
+      { label: 'Minha coleção' },
+      { label: 'Atividade' },
+      { label: 'Estúdio do criador' },
+      { label: 'Lista de interesse', to: '/favorites' },
+    ],
+  },
+  {
+    title: 'Central de ajuda',
+    links: ['Central de ajuda', 'Como comprar NFTs', 'Carteira e segurança', 'Política do mercado', 'Denunciar item'].map((label) => ({ label })),
+  },
+  {
+    title: 'Coleções',
+    links: [
+      { label: 'Arte digital', category: 'arte-digital' },
+      { label: 'Fotografia', category: 'fotografia' },
+      { label: 'Música', category: 'musica' },
+      { label: 'Arte 3D', category: 'arte-3d' },
+      { label: 'Utilidade', category: 'utilidade' },
+    ],
+  },
 ]
+
+function FooterLinkItem({ link }: { link: FooterLink }) {
+  const className = 'hover:text-text-accent hover:underline'
+  if (link.to) return <Link to={link.to} className={className}>{link.label}</Link>
+  if (link.category) {
+    return (
+      <Link to="/" search={{ category: [link.category] }} hash="mercado" activeOptions={{ includeHash: true }} className={className}>
+        {link.label}
+      </Link>
+    )
+  }
+  return <ComingSoon>{link.label}</ComingSoon>
+}
 
 const SOCIALS = [
   { name: 'Facebook', icon: facebookIcon },
@@ -103,8 +144,8 @@ export function Footer() {
             <h2 className="text-lg leading-4 font-bold">{column.title}</h2>
             <ul className="text-sm leading-7.5">
               {column.links.map((link) => (
-                <li key={link}>
-                  <ComingSoon>{link}</ComingSoon>
+                <li key={link.label}>
+                  <FooterLinkItem link={link} />
                 </li>
               ))}
             </ul>

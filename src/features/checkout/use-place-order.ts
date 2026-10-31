@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 
 import { createOrder } from './api'
 import type { CheckoutAttempt } from './attempt'
+import { clearDraft } from './draft'
 
 // Envia o pedido. Duas proteções contra pedido duplicado:
 //   1. enquanto envia, o botão fica travado (isPending): clique duplo não reenvia;
@@ -13,6 +14,9 @@ export function usePlaceOrder() {
   return useMutation({
     mutationFn: ({ key, input }: CheckoutAttempt) => createOrder(input, key),
     retry: (failureCount, error) => error.isRetryable && failureCount < 2,
-    onSuccess: (order) => void navigate({ to: '/orders/$orderId', params: { orderId: order.id }, replace: true }),
+    onSuccess: (order) => {
+      clearDraft() // o pedido existe: o rascunho cumpriu seu papel
+      void navigate({ to: '/orders/$orderId', params: { orderId: order.id }, replace: true })
+    },
   })
 }

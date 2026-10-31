@@ -63,6 +63,9 @@ export function UserMenu({ name, email, children }: { name: string; email: strin
           <Link to="/profile">Meu perfil</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link to="/favorites">Meus favoritos</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link to="/profile/wallets">Carteiras</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

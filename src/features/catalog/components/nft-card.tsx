@@ -26,9 +26,12 @@ interface NftCardProps {
   // A primeira linha de cards aparece sem rolar a página: carrega na frente
   // (ajuda no LCP). O resto só carrega perto de entrar na tela.
   priority?: boolean
+  // O coração aparece só no mobile (Figma). Na página de favoritos, também no
+  // desktop: lá, desfavoritar é a ação principal.
+  favoriteOnDesktop?: boolean
 }
 
-export function NftCard({ nft, priority = false }: NftCardProps) {
+export function NftCard({ nft, priority = false, favoriteOnDesktop = false }: NftCardProps) {
   const favorites = useToggleFavorite()
   const favorite = favorites.isFavorite(nft.id)
 
@@ -64,7 +67,10 @@ export function NftCard({ nft, priority = false }: NftCardProps) {
         aria-label={`Favoritar ${nft.name}`}
         aria-pressed={favorite}
         onClick={() => favorites.toggle(nft.id, nft.name)}
-        className="absolute top-3 right-3 z-10 grid size-7 place-items-center rounded-full border border-border bg-surface-raised text-primary after:absolute after:-inset-2 lg:hidden"
+        className={cn(
+          'absolute top-3 right-3 z-10 grid size-7 place-items-center rounded-full border border-border bg-surface-raised text-primary after:absolute after:-inset-2',
+          favoriteOnDesktop ? 'lg:top-8 lg:right-5 lg:size-8' : 'lg:hidden',
+        )}
       >
         <MaskIcon src={favorite ? heartFilledIcon : heartOutlineIcon} width={15} height={13.35} />
       </button>

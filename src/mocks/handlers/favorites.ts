@@ -1,10 +1,11 @@
 import { delay, http } from 'msw'
 
-import { favoritesResponseSchema } from '@/contracts/auth'
+import { favoriteNftsResponseSchema, favoritesResponseSchema } from '@/contracts/auth'
 
 import { readDb, writeDb } from '../db'
 import { requireSession } from '../session'
 import { API, apiError, json } from '../utils'
+import { toSummary } from './nfts'
 
 const favoritesOf = (userId: string) => readDb().favorites[userId] ?? []
 
@@ -16,6 +17,20 @@ export const favoritesHandlers = [
     const session = requireSession(request)
     if ('error' in session) return session.error
     return json(favoritesResponseSchema, { nftIds: favoritesOf(session.user.id) })
+  }),
+
+  // O mais recente primeiro (ordem em que foram favoritados, invertida).
+  http.get(`${API}/me/favorites/nfts`, async ({ request }) => {
+    await delay()
+    const session = requireSession(request)
+    if ('error' in session) return session.error
+    const { nfts } = readDb()
+    const items = favoritesOf(session.user.id)
+      .toReversed()
+      .map((id) => nfts.find((nft) => nft.id === id))
+      .filter((nft) => nft !== undefined)
+      .map(toSummary)
+    return json(favoriteNftsResponseSchema, { items })
   }),
 
   // PUT e DELETE são idempotentes: favoritar duas vezes dá o mesmo resultado

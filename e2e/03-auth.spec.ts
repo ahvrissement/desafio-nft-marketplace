@@ -1,4 +1,4 @@
-import { devApi, expect, login, open, test, USERS } from './support'
+import { buy, devApi, expect, login, open, test, USERS } from './support'
 
 // Fluxo 3: cadastro, login, expiração de sessão, logout e troca de usuário.
 
@@ -73,5 +73,42 @@ test.describe('conta e sessão', () => {
     await dialog.getByLabel('Senha', { exact: true }).fill(USERS.bruno.password)
     await dialog.locator('button[type=submit]').click()
     await expect(page).toHaveURL(/\/checkout$/)
+  })
+
+  test('sessão expira no checkout: o que foi preenchido volta depois do login', async ({ page }) => {
+    await login(page, 'ana')
+    await buy(page, 'emerald-ape-042')
+    await page.goto('/checkout')
+    await page.getByLabel('Nome de exibição').fill('Ana do Teste')
+    await page.getByLabel('Observação do colecionador (opcional)').fill('Presente de aniversário')
+
+    await devApi(page, 'POST', '/__dev/expire-sessions')
+    // A próxima chamada autenticada descobre a expiração (aqui: conectar a carteira)
+    await page.locator('aside').getByRole('button', { name: 'Conectar agora' }).click()
+    await expect(page.getByRole('heading', { name: 'Sua sessão expirou' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Entrar e continuar' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('E-mail').fill(USERS.ana.email)
+    await dialog.getByLabel('Senha', { exact: true }).fill(USERS.ana.password)
+    await dialog.locator('button[type=submit]').click()
+
+    await expect(page).toHaveURL(/\/checkout$/)
+    await expect(page.getByLabel('Nome de exibição')).toHaveValue('Ana do Teste')
+    await expect(page.getByLabel('Observação do colecionador (opcional)')).toHaveValue('Presente de aniversário')
+  })
+
+  test('o rascunho do checkout de uma conta não aparece para outra', async ({ page }) => {
+    await login(page, 'ana')
+    await buy(page, 'emerald-ape-042')
+    await page.goto('/checkout')
+    await page.getByLabel('Observação do colecionador (opcional)').fill('Nota privada da Ana')
+    await page.locator('header').getByRole('button', { name: /Conta de/ }).click()
+    await page.getByRole('menuitem', { name: 'Sair' }).click()
+
+    await login(page, 'bruno')
+    await buy(page, 'sage-nomad-009')
+    await page.goto('/checkout')
+    await expect(page.getByLabel('Observação do colecionador (opcional)')).toHaveValue('')
   })
 })

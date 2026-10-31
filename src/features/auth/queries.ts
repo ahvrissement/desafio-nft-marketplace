@@ -2,7 +2,7 @@ import { queryOptions, type QueryClient } from '@tanstack/react-query'
 
 import type { User } from '@/contracts/auth'
 
-import { fetchFavorites, fetchSession } from './api'
+import { fetchFavoriteNfts, fetchFavorites, fetchSession } from './api'
 import { clearToken } from './token-store'
 
 // Chaves de dados PRIVADOS começam com ['me', userId]. Duas proteções:
@@ -23,6 +23,15 @@ export const authQueries = {
     queryOptions({
       queryKey: ['me', userId, 'favorites'] as const,
       queryFn: ({ signal }) => fetchFavorites(signal),
+    }),
+
+  // DEBAIXO da chave dos favoritos de propósito: o invalidate de
+  // ['me', userId, 'favorites'] (feito ao favoritar/desfavoritar) também
+  // atualiza esta lista, sem nenhum código a mais.
+  favoriteNfts: (userId: string) =>
+    queryOptions({
+      queryKey: ['me', userId, 'favorites', 'nfts'] as const,
+      queryFn: ({ signal }) => fetchFavoriteNfts(signal),
     }),
 }
 
