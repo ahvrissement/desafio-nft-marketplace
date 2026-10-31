@@ -19,6 +19,9 @@ const snapshot = (page: Page, name: string) =>
   })
 
 test.describe('regressão visual', () => {
+  // "Reduzir movimento": o carrossel do Hero não gira sozinho e a foto fica estável.
+  test.use({ reducedMotion: 'reduce' })
+
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-10-30T12:00:00-03:00'))
   })

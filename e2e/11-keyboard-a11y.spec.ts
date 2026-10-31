@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test'
+
 import { expect, open, test } from './support'
 
 // Fluxo 11: navegação por teclado, foco de diálogos e validação de formulários.
@@ -59,5 +61,50 @@ test.describe('teclado e foco', () => {
     await page.keyboard.press('Space')
     await expect(checkbox).toBeChecked()
     await expect(page).toHaveURL(/category=/)
+  })
+})
+
+// Carrossel do Hero: troca automática pausável (WCAG 2.2.2) e setas no desktop.
+// page.clock: o relógio é falso, então "6 segundos" passam na hora.
+test.describe('carrossel do Hero', () => {
+  const hero = (page: Page) => page.getByRole('region', { name: 'Destaques da Kurio', exact: true })
+  const current = (page: Page) => hero(page).locator('button[aria-current="true"]')
+
+  test('troca sozinha a cada 6s, pausa com o mouse em cima e pelo botão', async ({ page }) => {
+    await page.clock.install()
+    await open(page, '/')
+    await expect(current(page)).toHaveAccessibleName('Slide 1 de 3')
+
+    await page.clock.runFor(6_000)
+    await expect(current(page)).toHaveAccessibleName('Slide 2 de 3')
+
+    // Mouse em cima: para de girar
+    await hero(page).hover()
+    await page.clock.runFor(12_000)
+    await expect(current(page)).toHaveAccessibleName('Slide 2 de 3')
+
+    // Botão de pausar: continua parado mesmo com o mouse fora
+    await hero(page).getByRole('button', { name: 'Pausar troca automática' }).click()
+    await page.mouse.move(0, 0)
+    await page.clock.runFor(12_000)
+    await expect(current(page)).toHaveAccessibleName('Slide 2 de 3')
+    await expect(hero(page).getByRole('button', { name: 'Retomar troca automática' })).toBeVisible()
+  })
+
+  test('setas trocam de slide e dão a volta', async ({ page }) => {
+    await open(page, '/')
+    await hero(page).getByRole('button', { name: 'Slide anterior' }).click()
+    await expect(current(page)).toHaveAccessibleName('Slide 3 de 3')
+    await hero(page).getByRole('button', { name: 'Próximo slide' }).click()
+    await expect(current(page)).toHaveAccessibleName('Slide 1 de 3')
+  })
+
+  test('com "reduzir movimento" no sistema, não gira sozinho @mobile', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.clock.install()
+    await open(page, '/')
+    await page.clock.runFor(20_000)
+    await expect(current(page)).toHaveAccessibleName('Slide 1 de 3')
+    await expect(hero(page).getByRole('button', { name: 'Retomar troca automática' })).toBeVisible()
   })
 })

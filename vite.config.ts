@@ -20,6 +20,12 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  // Saídas do Lighthouse e do Playwright não são código do site. Sem isto, o
+  // dev server via cada relatório .html novo como uma "página alterada" e
+  // recarregava o navegador a cada 30s, roubando CPU da própria auditoria.
+  server: {
+    watch: { ignored: ['**/lighthouse/**', '**/test-results/**', '**/playwright-report/**'] },
+  },
   // Vitest: testes de unidade (*.test.ts) ficam ao lado do código.
   // Os testes E2E do Playwright (*.spec.ts) vão para e2e/ e não entram aqui.
   test: {

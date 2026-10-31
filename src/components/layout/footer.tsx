@@ -88,8 +88,9 @@ export function Footer() {
     // para as colunas de links não quebrarem palavras. Variantes como lg: também
     // funcionam em utilitários criados com @utility.
     <footer className="mt-24 pb-6 lg:page-container">
-      {/* 1. Destaques + newsletter */}
-      <section aria-label="Destaques da Kurio" className="bg-card p-6 lg:p-8">
+      {/* 1. Vantagens + newsletter. Nome diferente do carrossel do Hero ("Destaques
+          da Kurio"): duas regiões com o mesmo nome confundem o leitor de tela. */}
+      <section aria-label="Por que a Kurio" className="bg-card p-6 lg:p-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between lg:gap-0">
           {FEATURES.map((feature, index) => (
             <div key={feature.letter} className="flex lg:contents">

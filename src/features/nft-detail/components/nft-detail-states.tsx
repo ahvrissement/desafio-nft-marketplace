@@ -1,14 +1,18 @@
 import { Link } from '@tanstack/react-router'
 
+import { NftCarousel } from '@/features/catalog/components/nft-carousel'
+
 // Skeleton do detalhe: as mesmas caixas e medidas da página pronta. Quando os
 // dados chegam, cada bloco ocupa exatamente o lugar do seu "fantasma" (CLS = 0).
+// Inclui as abas e o carrossel: sem eles a página "crescia" ao carregar, e o
+// rodapé, que aparecia na tela durante o skeleton, era empurrado (CLS 0,2).
 export function NftDetailSkeleton() {
   return (
-    <div aria-busy="true" className="lg:page-container lg:pt-8">
+    <div aria-busy="true" className="flex flex-col gap-12 lg:gap-24 lg:pt-8">
       <span className="sr-only" role="status">
         Carregando NFT…
       </span>
-      <div aria-hidden>
+      <div aria-hidden className="lg:page-container">
         <div className="mb-3 hidden h-4 w-36 rounded-sm skeleton-shimmer lg:block" />
         <div className="lg:grid lg:grid-cols-[573px_1fr] lg:items-start lg:gap-8">
           {/* Galeria */}
@@ -37,6 +41,16 @@ export function NftDetailSkeleton() {
             <div className="h-21 w-3/4 rounded-sm skeleton-shimmer" />
           </div>
         </div>
+      </div>
+
+      {/* Abas: a altura medida na página pronta (o texto tem tamanho parecido em todo NFT) */}
+      <div aria-hidden className="page-container h-168 lg:h-90">
+        <div className="h-8 w-full border-b border-border" />
+        <div className="mt-4 h-40 w-full rounded-sm skeleton-shimmer" />
+      </div>
+
+      <div aria-hidden>
+        <NftCarousel title="Mais desta coleção" items={undefined} isPending />
       </div>
     </div>
   )

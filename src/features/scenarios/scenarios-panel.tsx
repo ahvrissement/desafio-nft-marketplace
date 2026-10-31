@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { FlaskConical } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -6,6 +7,7 @@ import { useCart } from '@/features/cart/use-cart'
 import { clearToken } from '@/features/auth/token-store'
 import { http } from '@/lib/http'
 import { addEth, percentOfEth } from '@/lib/money'
+import { cn } from '@/lib/utils'
 
 // Painel de cenários do mock (README: cenários "configuráveis e reproduzíveis").
 // Só existe com o MSW ligado. Tudo passa pelas rotas /api/__dev do mock:
@@ -83,9 +85,18 @@ export default function ScenariosPanel() {
 
   return (
     <Sheet>
-      <SheetTrigger className="fixed bottom-48 left-3 z-30 flex h-9 items-center gap-2 rounded-full border border-primary bg-card px-3 text-xs font-bold text-text-accent shadow-lg lg:bottom-4 lg:left-4">
-        <span aria-hidden className={active ? 'size-2 rounded-full bg-destructive' : 'size-2 rounded-full bg-emerald-400'} />
-        Cenários
+      {/* Celular: só um círculo com ícone (o texto cobria os cards). O nome
+          "Cenários" continua para o leitor de tela (sr-only até o lg). */}
+      <SheetTrigger className="fixed bottom-48 left-3 z-30 grid size-9 place-items-center rounded-full border border-primary bg-card text-xs font-bold text-text-accent shadow-lg lg:bottom-4 lg:left-4 lg:flex lg:h-9 lg:w-auto lg:items-center lg:gap-2 lg:px-3">
+        <span
+          aria-hidden
+          className={cn(
+            'absolute top-0.5 right-0.5 size-2 rounded-full lg:static',
+            active ? 'bg-destructive' : 'bg-emerald-400',
+          )}
+        />
+        <FlaskConical aria-hidden className="size-4 lg:hidden" />
+        <span className="max-lg:sr-only">Cenários</span>
         {active && <span className="sr-only"> (há cenários ativos)</span>}
       </SheetTrigger>
       <SheetContent side="left" className="w-[min(92vw,380px)] gap-0 overflow-y-auto bg-card p-5">

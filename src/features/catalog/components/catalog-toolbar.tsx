@@ -21,7 +21,13 @@ export function CatalogTabs({ className }: { className?: string }) {
   const { search, setFilters } = useCatalogSearch()
 
   return (
-    <div role="group" aria-label="Recorte do catálogo" className={cn('flex gap-5', className)}>
+    // Celulares estreitos (< ~360px): as três não cabem. Em vez de cortar o
+    // "Em alta" na borda, a linha rola de lado (sem barra visível).
+    <div
+      role="group"
+      aria-label="Recorte do catálogo"
+      className={cn('flex gap-4 overflow-x-auto [scrollbar-width:none] lg:gap-5 lg:overflow-visible', className)}
+    >
       {TABS.map((tab) => {
         const active = search.tab === tab.value
         return (

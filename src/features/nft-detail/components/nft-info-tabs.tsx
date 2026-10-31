@@ -22,11 +22,11 @@ export function NftInfoTabs({ nft }: { nft: Nft }) {
   const [tab, setTab] = useState('details')
 
   const triggerClass =
-    'h-auto flex-none rounded-none border-0 px-0 pb-3 text-base leading-4 font-medium text-foreground hover:text-text-accent data-active:font-bold data-active:text-text-accent data-active:after:bottom-0 data-active:after:bg-primary lg:text-lg'
+    'h-auto flex-none rounded-none border-0 px-0 pb-3 text-sm min-[390px]:text-base leading-4 font-medium text-foreground hover:text-text-accent data-active:font-bold data-active:text-text-accent data-active:after:bottom-0 data-active:after:bg-primary lg:text-lg'
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="gap-0">
-      <TabsList variant="line" className="h-auto w-full justify-start gap-8 border-b border-border p-0">
+      <TabsList variant="line" className="h-auto w-full justify-start gap-5 border-b min-[390px]:gap-8 border-border p-0">
         <TabsTrigger value="details" className={triggerClass}>
           Detalhes do NFT
         </TabsTrigger>

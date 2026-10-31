@@ -27,3 +27,6 @@ dist-ssr
 # visuais em e2e/**/*-snapshots/ SÃO versionadas)
 playwright-report
 test-results
+
+# Lighthouse: todas as execuções (os relatórios medianos em lighthouse/reports/ são versionados)
+lighthouse/runs
