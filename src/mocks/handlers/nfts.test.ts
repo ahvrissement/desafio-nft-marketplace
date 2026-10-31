@@ -1,10 +1,16 @@
 import { setupServer } from 'msw/node'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { nftFacetsSchema, nftListResponseSchema, nftSchema, type NftListResponse } from '@/contracts/nft'
+import {
+  featuredNftResponseSchema,
+  nftFacetsSchema,
+  nftListResponseSchema,
+  nftSchema,
+  type NftListResponse,
+} from '@/contracts/nft'
 import { compareEth } from '@/lib/money'
 
-import { resetDb } from '../db'
+import { resetDb, writeDb } from '../db'
 import { createSeedNfts } from '../seed'
 import { nftHandlers } from './nfts'
 
@@ -126,5 +132,23 @@ describe('GET /api/nfts/facets', () => {
     expect(sum(facets.categories)).toBe(48)
     expect(sum(facets.networks)).toBe(48)
     expect(facets.priceRange).toEqual({ min: '0.02', max: '12.30' })
+  })
+})
+
+describe('GET /api/nfts/featured', () => {
+  it('devolve o NFT marcado como destaque no seed (o do Figma)', async () => {
+    const { status, body } = await get('/nfts/featured')
+    expect(status).toBe(200)
+    const { item } = featuredNftResponseSchema.parse(body)
+    expect(item?.name).toBe('Sage Nomad #009')
+    expect(item?.price).toBe('1.69')
+  })
+
+  it('devolve item null quando não há destaque', async () => {
+    writeDb((draft) => {
+      for (const nft of draft.nfts) nft.featured = false
+    })
+    const { body } = await get('/nfts/featured')
+    expect(featuredNftResponseSchema.parse(body)).toEqual({ item: null })
   })
 })

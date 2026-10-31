@@ -1,4 +1,5 @@
 import {
+  featuredNftResponseSchema,
   nftFacetsSchema,
   nftListResponseSchema,
   type NftListQueryInput,
@@ -14,4 +15,9 @@ export function fetchNfts(query: NftListQueryInput, signal?: AbortSignal) {
 
 export function fetchNftFacets(signal?: AbortSignal) {
   return request(nftFacetsSchema, { url: '/nfts/facets', signal })
+}
+
+export async function fetchFeaturedNft(signal?: AbortSignal) {
+  const { item } = await request(featuredNftResponseSchema, { url: '/nfts/featured', signal })
+  return item
 }

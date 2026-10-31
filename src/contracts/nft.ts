@@ -183,3 +183,8 @@ export const nftFacetsSchema = z.object({
   priceRange: z.object({ min: ethAmountSchema, max: ethAmountSchema }),
 })
 export type NftFacets = z.infer<typeof nftFacetsSchema>
+
+// GET /api/nfts/featured: o "NFT em destaque" da sidebar. `null` quando nenhum
+// NFT está marcado como destaque (a Home simplesmente não mostra o banner).
+export const featuredNftResponseSchema = z.object({ item: nftSummarySchema.nullable() })
+export type FeaturedNftResponse = z.infer<typeof featuredNftResponseSchema>

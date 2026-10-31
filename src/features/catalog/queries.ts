@@ -2,7 +2,7 @@ import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 
 import type { NftListQueryInput } from '@/contracts/nft'
 
-import { fetchNftFacets, fetchNfts } from './api'
+import { fetchFeaturedNft, fetchNftFacets, fetchNfts } from './api'
 
 // "Receitas" de query: a chave e a função ficam juntas, num lugar só.
 // O componente usa com useQuery(catalogQueries.list(q)) e o loader da rota com
@@ -28,5 +28,13 @@ export const catalogQueries = {
       queryKey: [...catalogQueries.all, 'facets'] as const,
       queryFn: ({ signal }) => fetchNftFacets(signal),
       staleTime: 5 * 60_000, // contagens da sidebar mudam pouco
+    }),
+
+  // Fica debaixo de ['nfts'] de propósito: quando o Socket.IO avisar que um preço
+  // mudou, invalidar ['nfts'] também atualiza o banner de destaque.
+  featured: () =>
+    queryOptions({
+      queryKey: [...catalogQueries.all, 'featured'] as const,
+      queryFn: ({ signal }) => fetchFeaturedNft(signal),
     }),
 }

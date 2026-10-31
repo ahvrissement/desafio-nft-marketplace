@@ -3,6 +3,7 @@ import { delay, http } from 'msw'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  featuredNftResponseSchema,
   NETWORKS,
   NETWORK_LABELS,
   NFT_PAGE_SIZE,
@@ -126,6 +127,17 @@ export const nftHandlers = [
       })),
       priceRange: { min: prices[0], max: prices[prices.length - 1] },
     })
+  }),
+
+  // Também antes de /nfts/:id, pelo mesmo motivo. Se houver mais de um destaque,
+  // vale o listado mais recentemente.
+  http.get(`${API}/nfts/featured`, async () => {
+    await delay()
+    const [featured] = sortNfts(
+      readDb().nfts.filter((nft) => nft.featured),
+      'recent',
+    )
+    return json(featuredNftResponseSchema, { item: featured ? toSummary(featured) : null })
   }),
 
   http.get(`${API}/nfts/:id`, async ({ params }) => {
