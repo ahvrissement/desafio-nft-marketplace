@@ -1,21 +1,14 @@
-import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import { lazy, Suspense } from 'react'
 
 import loginIcon from '@/assets/icons/login.svg'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 import { firstName } from '../use-auth-success'
 import { useAuthDialog } from '../use-auth-dialog'
-import { useLogout } from '../use-logout'
 import { useSession } from '../use-session'
+
+// Sob demanda: visitantes (a maioria na primeira visita) nunca baixam o menu.
+const UserMenu = lazy(() => import('./user-menu').then((m) => ({ default: m.UserMenu })))
 
 // Botão "Entrar" do header (desktop). Logado, vira o nome da pessoa com um menu.
 export function AccountMenu() {
@@ -37,43 +30,19 @@ export function AccountMenu() {
     )
   }
 
-  return (
-    <UserMenu name={user.name} email={user.email}>
-      <Button type="button" aria-label={`Conta de ${user.name}`} className="h-8.75 min-w-25 gap-2 rounded-md px-3 text-base font-medium text-ink">
-        <Initial name={user.name} />
-        {firstName(user.name)}
-      </Button>
-    </UserMenu>
+  const button = (
+    <Button type="button" aria-label={`Conta de ${user.name}`} className="h-8.75 min-w-25 gap-2 rounded-md px-3 text-base font-medium text-ink">
+      <Initial name={user.name} />
+      {firstName(user.name)}
+    </Button>
   )
-}
-
-// Menu da conta, reaproveitado pelo item "Perfil" da barra inferior do mobile.
-export function UserMenu({ name, email, children }: { name: string; email: string; children: ReactNode }) {
-  const logoutMutation = useLogout()
+  // Enquanto o menu carrega, o mesmo botão (sem salto visual)
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-card">
-        <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="font-bold text-foreground">{name}</span>
-          <span className="truncate text-xs font-normal text-text-subtle">{email}</span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/profile">Meu perfil</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/favorites">Meus favoritos</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/profile/wallets">Carteiras</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem disabled={logoutMutation.isPending} onSelect={() => logoutMutation.mutate()} className="font-bold text-text-accent">
-          Sair
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Suspense fallback={button}>
+      <UserMenu name={user.name} email={user.email}>
+        {button}
+      </UserMenu>
+    </Suspense>
   )
 }
 

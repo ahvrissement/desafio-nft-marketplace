@@ -11,7 +11,12 @@ export const USERS = {
   bruno: { email: 'bruno@kurio.dev', password: 'Kurio@123', name: 'Bruno Criador' },
 } as const
 
+// O app desenha a tela antes de o MSW ficar pronto (src/lib/mocks-ready.ts) e
+// marca <html data-mocks="ready"> quando ele começa a atender.
+export const waitForMocks = (page: Page) => expect(page.locator('html[data-mocks="ready"]')).toBeAttached()
+
 export async function devApi(page: Page, method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown) {
+  await waitForMocks(page)
   return page.evaluate(
     async ([m, p, b]) => {
       const response = await fetch(`/api${p}`, {
@@ -38,10 +43,11 @@ export const setScenarios = (page: Page, scenarios: Scenarios) => devApi(page, '
 export const updateNft = (page: Page, update: { nftId: string; editionId: string; price?: string; available?: number | null }) =>
   devApi(page, 'POST', '/__dev/nft-update', update)
 
-// Abre a página e espera o app montar (o app só renderiza depois do MSW pronto).
+// Abre a página e espera o app montar e o mock ficar pronto.
 export async function open(page: Page, path: string) {
   await page.goto(path)
   await expect(page.locator('main#conteudo')).toBeVisible()
+  await waitForMocks(page)
 }
 
 // Login pelo modal (?auth=entrar), na página indicada.

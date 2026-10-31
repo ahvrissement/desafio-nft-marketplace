@@ -4,6 +4,8 @@ import type { z } from 'zod'
 import { apiErrorBodySchema } from '@/contracts/common'
 import { getToken } from '@/features/auth/token-store'
 
+import { mocksReady } from './mocks-ready'
+
 // Códigos que não vêm da API, mas do próprio cliente:
 //   NETWORK_ERROR    a requisição nem chegou (offline, DNS, CORS)
 //   TIMEOUT          passou do tempo limite sem resposta
@@ -51,7 +53,10 @@ export const http = axios.create({
 
 // Interceptor de REQUISIÇÃO: anexa o token da sessão em toda chamada.
 // Os componentes nunca lidam com o header; quem decide é este ponto único.
-http.interceptors.request.use((config) => {
+// Antes, espera o mock ficar pronto (mocks-ready.ts). Depois disso, a Promise
+// já resolvida não atrasa nada.
+http.interceptors.request.use(async (config) => {
+  await mocksReady
   const token = getToken()
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   return config

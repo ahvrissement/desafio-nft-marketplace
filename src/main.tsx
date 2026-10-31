@@ -1,6 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { StrictMode } from 'react'
+import { StrictMode, startTransition } from 'react'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
@@ -8,6 +8,7 @@ import { authQueries, endSession } from '@/features/auth/queries'
 import { TOKEN_STORAGE_KEY, getToken } from '@/features/auth/token-store'
 import { MOCKS_ENABLED } from '@/lib/env'
 import { setSessionExpiredHandler } from '@/lib/http'
+import { setMocksReady } from '@/lib/mocks-ready'
 import { queryClient } from '@/lib/query-client'
 import './index.css'
 // Arquivo GERADO pelo plugin do Vite a partir de src/routes/. Não edite à mão.
@@ -56,24 +57,30 @@ window.addEventListener('storage', (event) => {
 })
 
 // O MSW roda também em PRODUÇÃO: o desafio pede um deploy público sem backend.
-// Esperamos o service worker ficar ativo antes de renderizar; senão as primeiras
-// requisições escapariam para a rede real e dariam 404.
 // O import() dinâmico deixa o código do mock num arquivo JS separado.
 async function enableMocking() {
-  if (!MOCKS_ENABLED) return
-  const { worker } = await import('./mocks/browser')
-  await worker.start({
-    quiet: import.meta.env.PROD,
-    // Imagens, fontes e o próprio Vite passam direto; só avisamos se
-    // alguma chamada à /api ficou sem handler (provável esquecimento).
-    onUnhandledRequest(request, print) {
-      if (new URL(request.url).pathname.startsWith('/api/')) print.warning()
-    },
-  })
+  try {
+    const { worker } = await import('./mocks/browser')
+    await worker.start({
+      quiet: import.meta.env.PROD,
+      // Imagens, fontes e o próprio Vite passam direto; só avisamos se
+      // alguma chamada à /api ficou sem handler (provável esquecimento).
+      onUnhandledRequest(request, print) {
+        if (new URL(request.url).pathname.startsWith('/api/')) print.warning()
+      },
+    })
+  } finally {
+    // Se o service worker falhar (navegador sem suporte), as requisições
+    // seguem e caem nos estados de erro, em vez de ficarem presas para sempre.
+    setMocksReady()
+  }
 }
 
-enableMocking().then(() => {
-  createRoot(document.getElementById('root')!).render(
+// startTransition: a primeira montagem é feita em fatias de ~5ms, devolvendo
+// o controle ao navegador entre elas (sem uma "tarefa longa" travando a página).
+const root = createRoot(document.getElementById('root')!)
+startTransition(() => {
+  root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
@@ -81,3 +88,31 @@ enableMocking().then(() => {
     </StrictMode>,
   )
 })
+
+// A tela NÃO espera o mock: o cabeçalho, o Hero, os skeletons e a barra
+// inferior aparecem logo. O mock só começa DEPOIS da primeira pintura com
+// conteúdo (o navegador avisa pelo PerformanceObserver), então baixar e
+// executar o MSW não atrasa o que a pessoa vê primeiro. As requisições
+// esperam por ele (lib/mocks-ready.ts).
+// Prazo de reserva: se o aviso não vier (navegador sem suporte), começa em 1,5s.
+function afterFirstContentfulPaint(callback: () => void) {
+  let done = false
+  let observer: PerformanceObserver | undefined
+  const run = () => {
+    if (done) return
+    done = true
+    observer?.disconnect()
+    callback()
+  }
+  try {
+    observer = new PerformanceObserver((list) => {
+      if (list.getEntriesByName('first-contentful-paint').length > 0) run()
+    })
+    observer.observe({ type: 'paint', buffered: true })
+  } catch {
+    // Sem PerformanceObserver: fica só o prazo de reserva
+  }
+  setTimeout(run, 1_500)
+}
+
+if (MOCKS_ENABLED) afterFirstContentfulPaint(() => void enableMocking())

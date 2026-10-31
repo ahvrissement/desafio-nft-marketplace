@@ -1,5 +1,6 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
 
+import { RenderWhenIdle } from '@/components/render-when-idle'
 import { CatalogSection } from '@/features/catalog/components/catalog-section'
 import { MobileSearchBar } from '@/features/catalog/components/mobile-search-bar'
 import { catalogQueries } from '@/features/catalog/queries'
@@ -44,11 +45,14 @@ function HomePage() {
       <Hero />
       <CatalogSection />
       {/* O frame mobile termina no catálogo; daqui para baixo, 48px entre seções no
-          mobile (metade do desktop). No desktop o gap-24 do pai já resolve. */}
-      <div className="mt-8 flex flex-col gap-12 lg:contents">
-        <Promos />
-        <BlogSection />
-      </div>
+          mobile (metade do desktop). No desktop o gap-24 do pai já resolve.
+          Abaixo da dobra: monta depois da primeira pintura (RenderWhenIdle). */}
+      <RenderWhenIdle>
+        <div className="mt-8 flex flex-col gap-12 lg:contents">
+          <Promos />
+          <BlogSection />
+        </div>
+      </RenderWhenIdle>
     </div>
   )
 }

@@ -1,15 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Outlet, createRootRouteWithContext, useMatches } from '@tanstack/react-router'
-import { lazy, Suspense } from 'react'
+import { Outlet, createRootRouteWithContext, useMatches, useSearch } from '@tanstack/react-router'
+import { lazy, Suspense, useState } from 'react'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
-import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { MobileTabBar, type MobileTab } from '@/components/layout/mobile-tab-bar'
 import { NotFoundPage } from '@/components/not-found-page'
+import { RenderWhenIdle } from '@/components/render-when-idle'
 import { Toaster } from '@/components/ui/sonner'
-import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import { authSearchSchema } from '@/features/auth/search'
 import { RealtimeBridge } from '@/features/realtime/realtime-bridge'
 import { MOCKS_ENABLED } from '@/lib/env'
@@ -18,6 +17,12 @@ import { cn } from '@/lib/utils'
 // Painel de cenários: só com o MSW ligado, e carregado sob demanda
 // (fica fora do bundle principal).
 const ScenariosPanel = MOCKS_ENABLED ? lazy(() => import('@/features/scenarios/scenarios-panel')) : null
+
+// Também sob demanda (fora do arquivo principal, que atrasava a primeira pintura no celular):
+//   - o rodapé, que fica abaixo da dobra (e traz o formulário de newsletter);
+//   - o modal de login, só quando ?auth= aparece na URL.
+const Footer = lazy(() => import('@/components/layout/footer').then((m) => ({ default: m.Footer })))
+const AuthDialog = lazy(() => import('@/features/auth/components/auth-dialog').then((m) => ({ default: m.AuthDialog })))
 
 // "Contexto" do router: objetos que toda rota recebe nos seus loaders.
 // Passamos o queryClient para que uma rota possa pré-carregar dados
@@ -70,11 +75,15 @@ function RootLayout() {
       <main id="conteudo" className="flex-1">
         <Outlet />
       </main>
-      <Footer />
+      <RenderWhenIdle>
+        <Suspense>
+          <Footer />
+        </Suspense>
+      </RenderWhenIdle>
 
       {mobileTab && <MobileTabBar active={mobileTab} />}
 
-      <AuthDialog />
+      <LazyAuthDialog />
       {/* Socket.IO: aplica nft.updated / order.updated no cache (não desenha nada) */}
       <RealtimeBridge />
       {ScenariosPanel && (
@@ -93,5 +102,20 @@ function RootLayout() {
         </>
       )}
     </div>
+  )
+}
+
+// Baixa o modal na primeira vez que ?auth= aparece e o mantém montado depois
+// (para a animação de fechar e o foco devolvido funcionarem como antes).
+function LazyAuthDialog() {
+  const { auth } = useSearch({ strict: false })
+  const [needed, setNeeded] = useState(false)
+  // "Ajustar o estado durante o render": o padrão do React para isso (sem useEffect).
+  if (auth && !needed) setNeeded(true)
+  if (!needed) return null
+  return (
+    <Suspense>
+      <AuthDialog />
+    </Suspense>
   )
 }

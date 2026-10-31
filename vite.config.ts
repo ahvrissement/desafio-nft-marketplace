@@ -18,6 +18,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
+      // Só o MSW importa o tough-cookie. A versão leve evita validar o domínio
+      // contra a lista pública de sufixos a cada handler × requisição (era o
+      // maior custo de CPU do mock no celular). Detalhes em cookie-jar-lite.ts.
+      'tough-cookie': path.resolve(import.meta.dirname, './src/mocks/cookie-jar-lite.ts'),
     },
   },
   // Saídas do Lighthouse e do Playwright não são código do site. Sem isto, o

@@ -9,7 +9,9 @@ export const PAGES = [
 ]
 
 // README: "três medições por página e perfil e reporte a mediana".
-export const RUNS = 3
+// LH_RUNS / LH_PROFILE / LH_COOLDOWN_MS: atalhos para medir rápido durante o
+// desenvolvimento. A auditoria entregue usa os valores padrão.
+export const RUNS = Number(process.env.LH_RUNS ?? 3)
 
 // README: metas por categoria.
 export const TARGETS = {
@@ -25,7 +27,7 @@ const onlyCategories = Object.keys(TARGETS)
 //   mobile: celular médio emulado (412×823), 4G lento simulado, CPU 4× mais lenta.
 //   desktop: 1350×940, rede rápida, CPU sem redução.
 // As condições exatas de cada execução saem no relatório (configSettings).
-export const PROFILES = [
+const ALL_PROFILES = [
   {
     id: 'mobile',
     name: 'Mobile',
@@ -38,13 +40,15 @@ export const PROFILES = [
   },
 ]
 
+export const PROFILES = process.env.LH_PROFILE ? ALL_PROFILES.filter((p) => p.id === process.env.LH_PROFILE) : ALL_PROFILES
+
 export const PORT = 4173
 
 // Pausa antes de cada execução. Em notebooks (CPU de baixo consumo), a carga
 // contínua faz a CPU reduzir a frequência, e as medições seguintes ficam bem
 // mais lentas que a primeira (o benchmarkIndex do relatório mostra isso).
 // Esperar a CPU "esfriar" deixa as execuções comparáveis entre si.
-export const COOLDOWN_MS = 30_000
+export const COOLDOWN_MS = Number(process.env.LH_COOLDOWN_MS ?? 30_000)
 
 // Abaixo disto, a execução rodou com a CPU degradada (pouca RAM livre, bateria,
 // outros programas) e é marcada com ⚠️ no resultado. Nesta máquina, com ela

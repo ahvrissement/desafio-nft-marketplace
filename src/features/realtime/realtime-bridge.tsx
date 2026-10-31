@@ -17,6 +17,7 @@ import { useSession } from '@/features/auth/use-session'
 import { cartQueries } from '@/features/cart/queries'
 import { checkoutQueries } from '@/features/checkout/queries'
 import { nftQueries } from '@/features/nft-detail/queries'
+import { mocksReady } from '@/lib/mocks-ready'
 
 // Ponte entre o Socket.IO e o cache do React Query. Não desenha nada: fica na
 // raiz do app e mantém UM socket por sessão.
@@ -41,7 +42,8 @@ export function RealtimeBridge() {
     // junto com o app, ele pegaria o WebSocket nativo antes de o MSW trocá-lo
     // pelo interceptado, e as conexões iriam para a rede de verdade.
     // (De quebra, o socket.io-client sai do bundle principal.)
-    void import('socket.io-client').then(({ io }) => {
+    // Por isso o import também espera o mock ficar pronto (mocks-ready.ts).
+    void mocksReady.then(() => import('socket.io-client')).then(({ io }) => {
       if (cancelled) return
       socket = connect(io)
     })
