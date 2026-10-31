@@ -5,6 +5,8 @@ import {
   featuredNftResponseSchema,
   nftFacetsSchema,
   nftListResponseSchema,
+  nftRelatedResponseSchema,
+  nftReviewsResponseSchema,
   nftSchema,
   type NftListResponse,
 } from '@/contracts/nft'
@@ -150,5 +152,29 @@ describe('GET /api/nfts/featured', () => {
     })
     const { body } = await get('/nfts/featured')
     expect(featuredNftResponseSchema.parse(body)).toEqual({ item: null })
+  })
+})
+
+describe('GET /api/nfts/:id/reviews e /related', () => {
+  it('gera uma avaliação por reviewCount, sempre as mesmas', async () => {
+    const first = await get('/nfts/emerald-ape-042/reviews')
+    const second = await get('/nfts/emerald-ape-042/reviews')
+    const { items } = nftReviewsResponseSchema.parse(first.body)
+    expect(items).toHaveLength(19) // "19 avaliações de colecionadores" do Figma
+    expect(second.body).toEqual(first.body)
+  })
+
+  it('lista a mesma coleção primeiro e nunca o próprio NFT', async () => {
+    const { body } = await get('/nfts/emerald-ape-042/related')
+    const { items } = nftRelatedResponseSchema.parse(body)
+    expect(items).toHaveLength(15)
+    expect(items.some((item) => item.id === 'emerald-ape-042')).toBe(false)
+    const firstOther = items.findIndex((item) => item.collection !== 'Kurio Apes')
+    expect(items.slice(firstOther).every((item) => item.collection !== 'Kurio Apes')).toBe(true)
+  })
+
+  it('responde 404 para NFT inexistente', async () => {
+    expect((await get('/nfts/nao-existe/reviews')).status).toBe(404)
+    expect((await get('/nfts/nao-existe/related')).status).toBe(404)
   })
 })

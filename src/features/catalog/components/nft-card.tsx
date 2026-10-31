@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router'
 
-import heartIcon from '@/assets/icons/card-heart.svg'
+import heartOutlineIcon from '@/assets/icons/heart-outline.svg'
+import heartFilledIcon from '@/assets/icons/tab-heart.svg'
+import { MaskIcon } from '@/components/mask-icon'
 import type { NftSummary } from '@/contracts/nft'
+import { useToggleFavorite } from '@/features/favorites/use-favorites'
 import { formatEth } from '@/lib/money'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +29,9 @@ interface NftCardProps {
 }
 
 export function NftCard({ nft, priority = false }: NftCardProps) {
+  const favorites = useToggleFavorite()
+  const favorite = favorites.isFavorite(nft.id)
+
   return (
     <article className="relative flex flex-col gap-2 lg:gap-3">
       <div className={cardFrameClass}>
@@ -51,14 +57,16 @@ export function NftCard({ nft, priority = false }: NftCardProps) {
       </div>
 
       {/* Favoritar (só no mobile, como no Figma). Fica acima do link do card (z-10),
-          então tocar no coração não abre o NFT. Passa a funcionar no passo de favoritos. */}
+          então tocar no coração não abre o NFT. aria-pressed diz se já é favorito;
+          o coração cheio/vazio garante que o estado não depende só da cor. */}
       <button
         type="button"
         aria-label={`Favoritar ${nft.name}`}
-        aria-pressed={false}
-        className="absolute top-3 right-3 z-10 grid size-7 place-items-center lg:hidden"
+        aria-pressed={favorite}
+        onClick={() => favorites.toggle(nft.id, nft.name)}
+        className="absolute top-3 right-3 z-10 grid size-7 place-items-center rounded-full border border-border bg-surface-raised text-primary after:absolute after:-inset-2 lg:hidden"
       >
-        <img src={heartIcon} alt="" />
+        <MaskIcon src={favorite ? heartFilledIcon : heartOutlineIcon} width={15} height={13.35} />
       </button>
 
       <div className="flex flex-col pl-2 lg:gap-3 lg:pl-0">
@@ -91,11 +99,11 @@ export function NftCardSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-2 lg:gap-3">
       <div className={cardFrameClass}>
-        <div className={cn(cardImageClass, 'shimmer')} />
+        <div className={cn(cardImageClass, 'skeleton-shimmer')} />
       </div>
       <div className="flex flex-col gap-1 pl-2 lg:gap-3 lg:pl-0">
-        <div className="h-5 w-3/4 rounded-sm shimmer lg:h-4" />
-        <div className="h-4 w-1/3 rounded-sm shimmer" />
+        <div className="h-5 w-3/4 rounded-sm skeleton-shimmer lg:h-4" />
+        <div className="h-4 w-1/3 rounded-sm skeleton-shimmer" />
       </div>
     </div>
   )

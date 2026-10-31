@@ -2,6 +2,7 @@ import axios, { type AxiosRequestConfig } from 'axios'
 import type { z } from 'zod'
 
 import { apiErrorBodySchema } from '@/contracts/common'
+import { getToken } from '@/features/auth/token-store'
 
 // Códigos que não vêm da API, mas do próprio cliente:
 //   NETWORK_ERROR    a requisição nem chegou (offline, DNS, CORS)
@@ -48,11 +49,32 @@ export const http = axios.create({
   paramsSerializer: { indexes: null },
 })
 
+// Interceptor de REQUISIÇÃO: anexa o token da sessão em toda chamada.
+// Os componentes nunca lidam com o header; quem decide é este ponto único.
+http.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) config.headers.set('Authorization', `Bearer ${token}`)
+  return config
+})
+
+// Quem avisa a interface quando a sessão expira. O http.ts não conhece React,
+// router nem cache: o main.tsx registra a função (inversão de dependência).
+let onSessionExpired: (() => void) | null = null
+export function setSessionExpiredHandler(handler: () => void) {
+  onSessionExpired = handler
+}
+
 // Interceptor de RESPOSTA: roda em toda resposta com erro, antes de chegar em quem chamou.
-// Os interceptors de sessão (token e 401) entram no passo de autenticação.
 http.interceptors.response.use(
   (response) => response,
-  (error: unknown) => Promise.reject(toApiError(error)),
+  (error: unknown) => {
+    const apiError = toApiError(error)
+    // Mandamos um token e a API disse que ele não vale mais: a sessão acabou,
+    // não importa qual tela fez a chamada. Um lugar só trata isso.
+    const sentToken = axios.isAxiosError(error) && error.config?.headers?.has('Authorization')
+    if (apiError.code === 'SESSION_EXPIRED' && sentToken) onSessionExpired?.()
+    return Promise.reject(apiError)
+  },
 )
 
 export function toApiError(error: unknown): ApiError {

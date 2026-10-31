@@ -9,6 +9,7 @@ import scanIcon from '@/assets/icons/tab-scan.svg'
 import shopIcon from '@/assets/icons/tab-shop.svg'
 import userIcon from '@/assets/icons/tab-user.svg'
 import { MaskIcon } from '@/components/mask-icon'
+import { MobileAccountButton } from '@/features/auth/components/mobile-account-button'
 import { cn } from '@/lib/utils'
 
 export type MobileTab = 'home' | 'favorites' | 'cart' | 'profile'
@@ -74,9 +75,9 @@ export function MobileTabBar({ active }: { active: MobileTab }) {
 
         <TabItem position={{ right: '9.66%' }} active={active === 'profile'}>
           {(props) => (
-            <button type="button" aria-label="Perfil" {...props}>
+            <MobileAccountButton {...props}>
               <MaskIcon src={userIcon} width={20} height={20} />
-            </button>
+            </MobileAccountButton>
           )}
         </TabItem>
       </ul>

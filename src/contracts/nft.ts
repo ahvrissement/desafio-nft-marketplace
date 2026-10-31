@@ -188,3 +188,27 @@ export type NftFacets = z.infer<typeof nftFacetsSchema>
 // NFT está marcado como destaque (a Home simplesmente não mostra o banner).
 export const featuredNftResponseSchema = z.object({ item: nftSummarySchema.nullable() })
 export type FeaturedNftResponse = z.infer<typeof featuredNftResponseSchema>
+
+// GET /api/nfts/:id/reviews: a aba "Avaliações de colecionadores".
+export const nftReviewSchema = z.object({
+  id: z.string(),
+  author: z.string(),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string(),
+  createdAt: z.iso.datetime(),
+})
+export type NftReview = z.infer<typeof nftReviewSchema>
+export const nftReviewsResponseSchema = z.object({ items: z.array(nftReviewSchema) })
+
+// GET /api/nfts/:id/related: "Mais desta coleção" (sem o próprio NFT).
+export const NFT_RELATED_LIMIT = 15
+export const nftRelatedResponseSchema = z.object({ items: z.array(nftSummarySchema).max(NFT_RELATED_LIMIT) })
+
+// Limite de unidades de uma mesma edição por pedido. Vale também quando a
+// edição é aberta (sem estoque): ninguém compra 10 mil de uma vez.
+export const MAX_QUANTITY_PER_ORDER = 10
+
+// Quantas unidades desta edição podem ir num pedido.
+export function maxQuantityFor(edition: NftEdition) {
+  return Math.min(edition.available ?? MAX_QUANTITY_PER_ORDER, MAX_QUANTITY_PER_ORDER)
+}

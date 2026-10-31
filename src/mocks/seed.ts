@@ -6,9 +6,12 @@ import {
   type Nft,
   type NftEdition,
   type NftImage,
+  type NftReview,
   type Rarity,
 } from '@/contracts/nft'
 import { multiplyEth, percentOfEth } from '@/lib/money'
+
+import type { DbUser } from './db'
 
 // Dados iniciais do "banco" falso.
 //
@@ -96,7 +99,7 @@ interface SeedInput {
 }
 
 const FIGMA_NFTS: SeedInput[] = [
-  { name: 'Emerald Ape #042', artwork: 'brown', price: '1.19', category: 'arte-digital', network: 'ethereum', rarity: 'Raro', rating: 5, reviewCount: 19, salesCount: 84, royaltyBps: 500 },
+  { name: 'Emerald Ape #042', artwork: 'brown', price: '1.19', category: 'arte-digital', network: 'ethereum', rarity: 'Raro', rating: 4.8, reviewCount: 19, salesCount: 84, royaltyBps: 500 },
   { name: 'Sage Nomad #009', artwork: 'gray', price: '1.69', category: 'colecionaveis', network: 'ethereum', featured: true, salesCount: 71 },
   { name: 'Neon Vessel #552', artwork: 'black', price: '1.99', compareAtPrice: '2.29', category: 'arte-3d', network: 'polygon', salesCount: 66 },
   { name: 'Cosmic Bloom #118', artwork: 'gray', price: '1.29', category: 'generativa', network: 'solana' },
@@ -212,4 +215,70 @@ export function createSeedNfts(): Nft[] {
   const random = createRandom(42)
   const inputs = [...FIGMA_NFTS, ...generatedInputs(random)]
   return inputs.map((input, index) => buildNft(input, index, random))
+}
+
+// ---------------------------------------------------------------------------
+// Avaliações
+// ---------------------------------------------------------------------------
+
+const REVIEW_AUTHORS = ['Marina Duarte', 'Rafael Okada', 'Lia Campos', 'Theo Martins', 'Bruna Sales', 'Caio Ventura', 'Nina Prado', 'Otto Lima']
+const REVIEW_COMMENTS = [
+  'A arte em alta resolução é ainda mais bonita do que nas miniaturas.',
+  'Entrega do token foi imediata e a procedência está toda na rede.',
+  'Coleção muito bem cuidada. Os atributos fazem diferença na vitrine.',
+  'Comprei a edição 1/50 e já recebi o acesso aos lançamentos exclusivos.',
+  'Ótimo custo-benefício para quem está começando a colecionar.',
+  'O criador é muito ativo com a comunidade. Recomendo.',
+]
+
+// Semente a partir do id ("emerald-ape-042" → número): cada NFT tem SEMPRE as
+// mesmas avaliações, sem precisar guardá-las no banco falso.
+function seedFromId(id: string): number {
+  let hash = 2166136261
+  for (const char of id) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619)
+  return hash >>> 0
+}
+
+// Gera `reviewCount` avaliações com notas em torno da média do NFT.
+export function createSeedReviews(nft: Pick<Nft, 'id' | 'rating' | 'reviewCount'>): NftReview[] {
+  const random = createRandom(seedFromId(nft.id))
+  return Array.from({ length: nft.reviewCount }, (_, index) => {
+    const rating = Math.min(5, Math.max(1, Math.round(nft.rating + (random.next() - 0.5) * 1.5)))
+    return {
+      id: `${nft.id}-review-${index + 1}`,
+      author: random.pick(REVIEW_AUTHORS),
+      rating,
+      comment: random.pick(REVIEW_COMMENTS),
+      // A mais recente primeiro: contando para trás a partir da listagem mais nova
+      // do seed, uma a cada ~19h (sem datas no futuro).
+      createdAt: new Date(NEWEST_LISTING - index * 19 * 3_600_000).toISOString(),
+    }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Usuários (o README pede pelo menos dois, para testar troca de usuário)
+// ---------------------------------------------------------------------------
+
+// Senha dos dois: Kurio@123. Os hashes foram calculados uma vez com
+// hashPassword() (mocks/crypto.ts); o seed não guarda a senha em lugar nenhum.
+export function createSeedUsers(): DbUser[] {
+  return [
+    {
+      id: 'user-ana',
+      name: 'Ana Colecionadora',
+      email: 'ana@kurio.dev',
+      passwordSalt: 'a1f3c9e27b4d6058',
+      passwordHash: '141b092cf36f323b9fe058e087e1c9fda982f333e8a284ff6cf7c57cd9da4164',
+      avatarUrl: null,
+    },
+    {
+      id: 'user-bruno',
+      name: 'Bruno Criador',
+      email: 'bruno@kurio.dev',
+      passwordSalt: 'c7e2b19f4a8d3056',
+      passwordHash: '1f850f3c32d4cc3f5369eca40181333ed1fdf992803bac6e335390e483633526',
+      avatarUrl: null,
+    },
+  ]
 }

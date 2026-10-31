@@ -171,7 +171,7 @@ function FilterSkeleton({ title, rows }: { title: string; rows: number }) {
       <p className="text-lg leading-4 font-bold">{title}</p>
       <div className="flex flex-col gap-4 px-3 py-3">
         {Array.from({ length: rows }, (_, index) => (
-          <div key={index} className="h-4 rounded-sm shimmer" />
+          <div key={index} className="h-4 rounded-sm skeleton-shimmer" />
         ))}
       </div>
     </div>

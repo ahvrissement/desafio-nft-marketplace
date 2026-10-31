@@ -7,9 +7,12 @@ import {
   NETWORKS,
   NETWORK_LABELS,
   NFT_PAGE_SIZE,
+  NFT_RELATED_LIMIT,
   nftFacetsSchema,
   nftListQuerySchema,
   nftListResponseSchema,
+  nftRelatedResponseSchema,
+  nftReviewsResponseSchema,
   nftSchema,
   type Nft,
   type NftListQuery,
@@ -19,6 +22,7 @@ import {
 import { compareEth } from '@/lib/money'
 
 import { readDb } from '../db'
+import { createSeedReviews } from '../seed'
 import { API, apiError, json, validationError } from '../utils'
 
 const NEW_WINDOW_MS = 14 * 24 * 60 * 60 * 1000 // "Novos lançamentos" = listados nos últimos 14 dias
@@ -145,5 +149,31 @@ export const nftHandlers = [
     const nft = readDb().nfts.find((item) => item.id === params.id)
     if (!nft) return apiError(404, 'NOT_FOUND', 'NFT não encontrado.')
     return json(nftSchema, nft)
+  }),
+
+  // Rotas com mais um segmento ("/nfts/x/reviews") não colidem com /nfts/:id.
+  http.get(`${API}/nfts/:id/reviews`, async ({ params }) => {
+    await delay()
+    const nft = readDb().nfts.find((item) => item.id === params.id)
+    if (!nft) return apiError(404, 'NOT_FOUND', 'NFT não encontrado.')
+    return json(nftReviewsResponseSchema, { items: createSeedReviews(nft) })
+  }),
+
+  // "Mais desta coleção": primeiro a mesma coleção, depois os mais recentes do
+  // catálogo para completar a vitrine. Nunca inclui o próprio NFT.
+  http.get(`${API}/nfts/:id/related`, async ({ params }) => {
+    await delay()
+    const { nfts } = readDb()
+    const nft = nfts.find((item) => item.id === params.id)
+    if (!nft) return apiError(404, 'NOT_FOUND', 'NFT não encontrado.')
+    const others = sortNfts(
+      nfts.filter((item) => item.id !== nft.id),
+      'recent',
+    )
+    const related = [
+      ...others.filter((item) => item.collection === nft.collection),
+      ...others.filter((item) => item.collection !== nft.collection),
+    ]
+    return json(nftRelatedResponseSchema, { items: related.slice(0, NFT_RELATED_LIMIT).map(toSummary) })
   }),
 ]

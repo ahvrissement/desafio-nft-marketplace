@@ -6,6 +6,10 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { MobileTabBar, type MobileTab } from '@/components/layout/mobile-tab-bar'
+import { NotFoundPage } from '@/components/not-found-page'
+import { Toaster } from '@/components/ui/sonner'
+import { AuthDialog } from '@/features/auth/components/auth-dialog'
+import { authSearchSchema } from '@/features/auth/search'
 import { cn } from '@/lib/utils'
 
 // "Contexto" do router: objetos que toda rota recebe nos seus loaders.
@@ -21,13 +25,19 @@ export interface RouterContext {
 declare module '@tanstack/react-router' {
   interface StaticDataRouteOption {
     mobileTab?: MobileTab
+    // A tela tem uma barra de compra fixa no rodapé do mobile (detalhe do NFT)
+    mobileBuyBar?: boolean
   }
 }
 
 // __root é o layout que envolve todas as páginas. <Outlet /> é onde a página
 // da rota atual é renderizada.
 export const Route = createRootRouteWithContext<RouterContext>()({
+  // ?auth=entrar | ?auth=cadastro em QUALQUER rota abre o modal de login por cima
+  // da página atual (como no Figma). Fica na URL: o "voltar" do navegador fecha.
+  validateSearch: authSearchSchema,
   component: RootLayout,
+  notFoundComponent: NotFoundPage,
 })
 
 function RootLayout() {
@@ -35,10 +45,11 @@ function RootLayout() {
   const mobileTab = useMatches({
     select: (matches) => matches.findLast((match) => match.staticData.mobileTab)?.staticData.mobileTab,
   })
+  const mobileBuyBar = useMatches({ select: (matches) => matches.some((match) => match.staticData.mobileBuyBar) })
 
   return (
-    // A barra inferior é fixa e cobre o fim da página: o padding reserva esse espaço.
-    <div className={cn('flex min-h-svh flex-col', mobileTab && 'pb-31.5 lg:pb-0')}>
+    // As barras do mobile são fixas e cobrem o fim da página: o padding reserva esse espaço.
+    <div className={cn('flex min-h-svh flex-col', mobileTab && 'pb-31.5 lg:pb-0', mobileBuyBar && 'pb-44 lg:pb-0')}>
       {/* Link "pular para o conteúdo": o primeiro Tab da página. Invisível até
           receber foco; poupa quem navega por teclado de passar por todo o menu. */}
       <a
@@ -55,6 +66,10 @@ function RootLayout() {
       <Footer />
 
       {mobileTab && <MobileTabBar active={mobileTab} />}
+
+      <AuthDialog />
+      {/* Avisos (toasts) com aria-live: o leitor de tela anuncia sem roubar o foco */}
+      <Toaster position="top-center" />
 
       {/* Os painéis de devtools só aparecem em desenvolvimento */}
       {import.meta.env.DEV && (

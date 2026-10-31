@@ -12,7 +12,9 @@ export const ethAmountSchema = z.string().regex(ETH_AMOUNT_REGEX, 'Valor em ETH 
 // fieldErrors só aparece em VALIDATION_ERROR: { "email": ["E-mail inválido"] }
 export const API_ERROR_CODES = [
   'VALIDATION_ERROR', // 400/422 dados enviados inválidos
-  'UNAUTHENTICATED', // 401 sem sessão ou sessão expirada
+  'UNAUTHENTICATED', // 401 rota privada chamada sem sessão
+  'SESSION_EXPIRED', // 401 o token enviado venceu ou foi encerrado (logout em outra aba)
+  'INVALID_CREDENTIALS', // 401 e-mail ou senha incorretos no login
   'FORBIDDEN', // 403 logado, mas sem permissão para este recurso
   'NOT_FOUND', // 404
   'CONFLICT', // 409 estado mudou (estoque, preço, e-mail já cadastrado, chave idempotente reutilizada)

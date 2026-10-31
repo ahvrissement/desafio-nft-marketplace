@@ -105,10 +105,15 @@
 
 /*
  * Skeleton com brilho ("shimmer"): um gradiente maior que o elemento que desliza.
+ *
+ * O nome NÃO pode ser só "shimmer": o shadcn/tailwind.css já tem um utilitário
+ * com esse nome (brilho em TEXTO, com background-clip: text). O Tailwind junta
+ * as duas definições, e o skeleton ficava invisível (o fundo só aparecia
+ * "dentro das letras", e as caixas não têm letras).
  * Com prefers-reduced-motion, a regra global lá embaixo zera a animação
  * e o skeleton fica parado, sem piscar.
  */
-@utility shimmer {
+@utility skeleton-shimmer {
     background-image: linear-gradient(
         90deg,
         var(--kurio-surface-raised) 25%,
@@ -116,10 +121,10 @@
         var(--kurio-surface-raised) 75%
     );
     background-size: 200% 100%;
-    animation: shimmer 1.4s ease-in-out infinite;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
 }
 
-@keyframes shimmer {
+@keyframes skeleton-shimmer {
     from {
         background-position: 100% 0;
     }

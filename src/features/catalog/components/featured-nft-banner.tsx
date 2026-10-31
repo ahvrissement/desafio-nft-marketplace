@@ -23,7 +23,7 @@ export function FeaturedNftBanner() {
 
       <div className="mt-4 h-92 overflow-hidden rounded-t-[20px]">
         {isPending ? (
-          <div aria-hidden className="size-full shimmer" />
+          <div aria-hidden className="size-full skeleton-shimmer" />
         ) : isError ? (
           <div role="alert" className="flex size-full flex-col items-center justify-center gap-4 px-5 text-center">
             <p className="text-sm text-text-secondary">Não foi possível carregar o destaque.</p>

@@ -1,13 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import arrowIcon from '@/assets/icons/arrow-right-long.svg'
 import { MaskIcon } from '@/components/mask-icon'
+import { useSwipe } from '@/hooks/use-swipe'
 import { cn } from '@/lib/utils'
 
 import { HERO_SLIDES, type HeroSlide } from '../content'
-
-const SWIPE_THRESHOLD = 40 // px de arrasto horizontal para trocar de slide no toque
 
 // Banner "Hero" da Home: carrossel SEM troca automática.
 // Com autoplay, a WCAG 2.2.2 exigiria um botão de pausar; sem ele, o usuário
@@ -20,22 +19,16 @@ const SWIPE_THRESHOLD = 40 // px de arrasto horizontal para trocar de slide no t
 //   - aria-live="polite" lê o novo slide quando o usuário troca.
 export function Hero() {
   const [active, setActive] = useState(0)
-  const touchStartX = useRef<number | null>(null)
   const total = HERO_SLIDES.length
 
   const goTo = (index: number) => setActive((index + total) % total)
+  const swipe = useSwipe({ onNext: () => goTo(active + 1), onPrevious: () => goTo(active - 1) })
 
   return (
     <section aria-roledescription="carrossel" aria-label="Destaques da Kurio" className="page-container">
       <div
         className="relative h-47.5 overflow-hidden rounded-3xl bg-surface-raised lg:h-112.5 lg:rounded-none lg:bg-background"
-        onTouchStart={(event) => (touchStartX.current = event.touches[0].clientX)}
-        onTouchEnd={(event) => {
-          if (touchStartX.current === null) return
-          const deltaX = event.changedTouches[0].clientX - touchStartX.current
-          touchStartX.current = null
-          if (Math.abs(deltaX) > SWIPE_THRESHOLD) goTo(active + (deltaX < 0 ? 1 : -1))
-        }}
+        {...swipe}
       >
         {/* Os dois círculos claros do fundo do banner mobile ("Ellipse 49/50" no Figma) */}
         <div aria-hidden className="lg:hidden">

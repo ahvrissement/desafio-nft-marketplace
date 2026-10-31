@@ -2,9 +2,8 @@ import { Link, useLocation } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 import cartIcon from '@/assets/icons/cart.svg'
-import loginIcon from '@/assets/icons/login.svg'
 import { ComingSoon } from '@/components/coming-soon'
-import { Button } from '@/components/ui/button'
+import { AccountMenu } from '@/features/auth/components/account-menu'
 import { HeaderSearch } from '@/features/catalog/components/header-search'
 import { cn } from '@/lib/utils'
 
@@ -102,13 +101,7 @@ export function Header() {
               )}
             </button>
 
-            {/* Abre o login no passo de autenticação */}
-            <Button type="button" className="h-8.75 w-25 gap-1 rounded-md px-0 text-base font-medium text-ink">
-              <span className="grid size-5 place-items-center">
-                <img src={loginIcon} alt="" />
-              </span>
-              Entrar
-            </Button>
+            <AccountMenu />
           </div>
         </div>
       </div>
