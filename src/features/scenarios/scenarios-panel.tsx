@@ -83,7 +83,7 @@ export default function ScenariosPanel() {
 
   return (
     <Sheet>
-      <SheetTrigger className="fixed bottom-34 left-3 z-30 flex h-9 items-center gap-2 rounded-full border border-primary bg-card px-3 text-xs font-bold text-text-accent shadow-lg lg:bottom-4 lg:left-4">
+      <SheetTrigger className="fixed bottom-48 left-3 z-30 flex h-9 items-center gap-2 rounded-full border border-primary bg-card px-3 text-xs font-bold text-text-accent shadow-lg lg:bottom-4 lg:left-4">
         <span aria-hidden className={active ? 'size-2 rounded-full bg-destructive' : 'size-2 rounded-full bg-emerald-400'} />
         Cenários
         {active && <span className="sr-only"> (há cenários ativos)</span>}

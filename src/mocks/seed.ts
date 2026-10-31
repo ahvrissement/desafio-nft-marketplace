@@ -273,6 +273,9 @@ export function createSeedUsers(): DbUser[] {
       passwordSalt: 'a1f3c9e27b4d6058',
       passwordHash: '141b092cf36f323b9fe058e087e1c9fda982f333e8a284ff6cf7c57cd9da4164',
       avatarUrl: null,
+      username: 'ana',
+      ensName: 'ana-kurio',
+      walletNickname: 'Principal',
     },
     {
       id: 'user-bruno',
@@ -281,6 +284,9 @@ export function createSeedUsers(): DbUser[] {
       passwordSalt: 'c7e2b19f4a8d3056',
       passwordHash: '1f850f3c32d4cc3f5369eca40181333ed1fdf992803bac6e335390e483633526',
       avatarUrl: null,
+      username: 'bruno',
+      ensName: 'bruno',
+      walletNickname: 'Principal',
     },
   ]
 }

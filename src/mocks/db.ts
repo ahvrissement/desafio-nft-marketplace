@@ -9,7 +9,7 @@ import { createSeedNfts, createSeedUsers, createSeedWallets } from './seed'
 const STORAGE_KEY = 'kurio:mock-db'
 // Mude este número ao alterar o formato do banco: dados antigos salvos
 // no navegador são descartados em vez de quebrar o app.
-const SCHEMA_VERSION = 9 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos · 7: carrinhos · 8: carteiras, pedidos e cenários · 9: cenários de rede
+const SCHEMA_VERSION = 10 // 2: + newsletter · 3: NFTs ganharam rarity · 4: raridade ponderada no seed · 5: nota 4,8 do Emerald Ape · 6: usuários, sessões e favoritos · 7: carrinhos · 8: carteiras, pedidos e cenários · 9: cenários de rede · 10: perfil
 
 export interface DbUser {
   id: string
@@ -18,6 +18,9 @@ export interface DbUser {
   passwordSalt: string
   passwordHash: string // sha256(salt + ":" + senha). A senha em si nunca é guardada.
   avatarUrl: string | null
+  username: string
+  ensName: string
+  walletNickname: string
 }
 
 export interface DbSession {

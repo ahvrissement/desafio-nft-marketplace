@@ -20,13 +20,15 @@ export function fingerprint(value: unknown): string {
 // uma impressão digital de tudo o que afeta o valor pago.
 export function buildQuote(userId: string): Quote {
   const cart = toCartResponse(getOrCreateCart({ kind: 'user', userId }))
-  const payable = cart.items.filter((item) => !item.issues.includes('sold_out'))
   const blocked = cart.items.length === 0 || cart.items.some((item) => item.issues.includes('sold_out') || item.issues.includes('insufficient_stock'))
   const id = `q-${fingerprint({
-    items: payable.map((item) => [item.nftId, item.editionId, item.quantity, item.unitPrice, item.maxQuantity]),
+    items: cart.items.map((item) => [item.nftId, item.editionId, item.quantity, item.unitPrice, item.maxQuantity, item.issues]),
     summary: cart.summary,
   })}`
-  return { id, items: payable, summary: cart.summary, blocked }
+  // TODOS os itens (inclusive esgotados) vão na cotação: com só os pagáveis, um
+  // carrinho com a única edição esgotada pareceria "vazio" no checkout, em vez
+  // de mostrar o aviso. O pedido só é criado quando nada está bloqueado.
+  return { id, items: cart.items, summary: cart.summary, blocked }
 }
 
 // O que o front recebe (sem os campos internos do mock).

@@ -16,7 +16,7 @@ import { checkoutFormSchema, defaultCheckoutValues, toOrderInput, type CheckoutF
 import { checkoutQueries } from '../queries'
 import { usePlaceOrder } from '../use-place-order'
 import { useWalletConnection } from '../use-wallet-connection'
-import { SelectField, TextAreaField, TextField } from './checkout-fields'
+import { SelectField, TextAreaField, TextField } from '@/components/form-fields'
 import { OrderSummary } from './order-summary'
 import { ReviewDialog } from './review-dialog'
 import { WalletSection } from './wallet-section'

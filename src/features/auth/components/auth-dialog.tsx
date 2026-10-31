@@ -7,7 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { cn } from '@/lib/utils'
 
 import type { AuthMode } from '../search'
-import { useAuthDialog } from '../use-auth-dialog'
+import { takeReturnFocus, useAuthDialog } from '../use-auth-dialog'
 import { LoginForm, SignupForm } from './auth-forms'
 import { SocialButtons } from './social-buttons'
 
@@ -49,6 +49,14 @@ export function AuthDialog() {
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           contentRef.current?.querySelector('input')?.focus()
+        }}
+        // Ao fechar: foco de volta em quem abriu (ex.: o botão "Entrar").
+        onCloseAutoFocus={(event) => {
+          const target = takeReturnFocus()
+          if (target) {
+            event.preventDefault()
+            target.focus()
+          }
         }}
         className={cn(
           'block gap-0 overflow-y-auto p-0 ring-0',

@@ -1,5 +1,8 @@
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import { useId, useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 
+import eyeHideIcon from '@/assets/icons/eye-hide.svg'
+import eyeShowIcon from '@/assets/icons/eye-show.svg'
+import { MaskIcon } from '@/components/mask-icon'
 import { cn } from '@/lib/utils'
 
 const controlClass = cn(
@@ -75,6 +78,29 @@ export function TextAreaField({ label, required, error, hint, className, ...prop
   return (
     <FieldShell label={label} required={required} error={error} hint={hint} className={className}>
       {(aria) => <textarea {...aria} {...props} className={cn(controlClass, 'min-h-38 resize-y py-2')} />}
+    </FieldShell>
+  )
+}
+
+// Senha com o "olho" do Figma (mostrar/ocultar).
+export function PasswordTextField({ label, required, error, hint, className, ...props }: Common & InputHTMLAttributes<HTMLInputElement>) {
+  const [visible, setVisible] = useState(false)
+  return (
+    <FieldShell label={label} required={required} error={error} hint={hint} className={className}>
+      {(aria) => (
+        <div className="relative">
+          <input {...aria} {...props} type={visible ? 'text' : 'password'} className={cn(controlClass, 'h-10 pr-12')} />
+          <button
+            type="button"
+            aria-label={visible ? `Ocultar ${label.toLowerCase()}` : `Mostrar ${label.toLowerCase()}`}
+            aria-pressed={visible}
+            onClick={() => setVisible((value) => !value)}
+            className="absolute inset-y-0 right-1 grid w-10 place-items-center text-text-subtle hover:text-text-accent"
+          >
+            <MaskIcon src={visible ? eyeShowIcon : eyeHideIcon} width={22} height={20} />
+          </button>
+        </div>
+      )}
     </FieldShell>
   )
 }

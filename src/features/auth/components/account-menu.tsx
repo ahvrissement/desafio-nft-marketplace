@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 import loginIcon from '@/assets/icons/login.svg'
@@ -57,6 +58,13 @@ export function UserMenu({ name, email, children }: { name: string; email: strin
           <span className="font-bold text-foreground">{name}</span>
           <span className="truncate text-xs font-normal text-text-subtle">{email}</span>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile">Meu perfil</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/profile/wallets">Carteiras</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={logoutMutation.isPending} onSelect={() => logoutMutation.mutate()} className="font-bold text-text-accent">
           Sair

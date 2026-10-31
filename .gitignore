@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright: relatório e traces são gerados a cada execução (as baselines
+# visuais em e2e/**/*-snapshots/ SÃO versionadas)
+playwright-report
+test-results

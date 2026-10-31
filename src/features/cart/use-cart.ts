@@ -53,6 +53,10 @@ function useCartMutation<TVariables>(mutationFn: (variables: TVariables) => Prom
 
   return useMutation({
     mutationKey: CART_MUTATION,
+    // scope: mutations do mesmo carrinho rodam EM FILA, na ordem dos cliques.
+    // Em paralelo, o "quantidade 3" podia chegar ao servidor antes do
+    // "quantidade 2" e o carrinho terminava em 2 (último a gravar vence).
+    scope: { id: 'cart' },
     mutationFn,
     onMutate: async (variables) => {
       if (!options.optimistic) return
@@ -103,5 +107,25 @@ export function useCartActions() {
   const coupon = useCartMutation((input: ApplyCouponInput) => applyCoupon(input), { notify: false })
   const clearCoupon = useCartMutation(() => removeCoupon())
 
-  return { add, update, remove, coupon, clearCoupon }
+  // Muda a quantidade por DELTA (+1/−1), lendo o valor atual do CACHE na hora
+  // do clique (síncrono), e grava o otimista ANTES da mutation. Ler das props
+  // falhava sob carga: o 2º clique rápido chegava antes do novo render, via a
+  // quantidade antiga e pedia o mesmo número (2 em vez de 3).
+  const { user } = useSession()
+  const queryClient = useQueryClient()
+  const changeQuantity = (itemId: string, delta: number) => {
+    const key = cartQueries.cart(user?.id ?? null).queryKey
+    const cart = queryClient.getQueryData<Cart>(key)
+    const item = cart?.items.find((entry) => entry.id === itemId)
+    if (!cart || !item) return
+    const quantity = Math.max(1, item.quantity + delta)
+    if (quantity === item.quantity) return
+    queryClient.setQueryData<Cart>(key, {
+      ...cart,
+      items: cart.items.map((entry) => (entry.id === itemId ? { ...entry, quantity } : entry)),
+    })
+    update.mutate({ itemId, input: { quantity } })
+  }
+
+  return { add, update, changeQuantity, remove, coupon, clearCoupon }
 }

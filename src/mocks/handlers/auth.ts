@@ -23,7 +23,18 @@ export const authHandlers = [
     }
 
     const salt = randomToken(8)
-    const user = { id: `user-${randomToken(6)}`, name, email, passwordSalt: salt, passwordHash: await hashPassword(password, salt), avatarUrl: null }
+    const username = email.split('@')[0].replace(/[^a-z0-9_.]/g, '').slice(0, 20).padEnd(3, '0')
+    const user = {
+      id: `user-${randomToken(6)}`,
+      name,
+      email,
+      passwordSalt: salt,
+      passwordHash: await hashPassword(password, salt),
+      avatarUrl: null,
+      username,
+      ensName: username.replace(/[_.]/g, '-'),
+      walletNickname: 'Principal',
+    }
     writeDb((db) => {
       db.users.push(user)
     })

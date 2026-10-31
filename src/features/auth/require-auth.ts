@@ -20,7 +20,12 @@ export async function requireAuth({
   // ensureQueryData: usa o cache se já souber quem está logado; senão pergunta à API.
   const user = await context.queryClient.ensureQueryData(authQueries.session()).catch(() => null)
   if (!user) {
-    throw redirect({ to: fallback, search: { auth: 'entrar', redirect: location.href }, replace: true })
+    // O destino NÃO pode carregar o próprio ?auth= (nem um redirect antigo):
+    // senão, depois de entrar, a pessoa voltaria para a rota com o modal aberto de novo.
+    const target = new URL(location.href, window.location.origin)
+    target.searchParams.delete('auth')
+    target.searchParams.delete('redirect')
+    throw redirect({ to: fallback, search: { auth: 'entrar', redirect: target.pathname + target.search }, replace: true })
   }
   return { user }
 }

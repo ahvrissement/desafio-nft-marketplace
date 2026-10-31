@@ -15,7 +15,9 @@ export function CartItems({ items }: { items: CartItem[] }) {
   const actions = useCartActions()
   const busyId = actions.update.isPending ? actions.update.variables?.itemId : undefined
 
-  const setQuantity = (item: CartItem, quantity: number) => actions.update.mutate({ itemId: item.id, input: { quantity } })
+  // O stepper informa o número novo; o que vale é a DIFERENÇA (+1/−1), aplicada
+  // sobre o valor atual do cache (veja changeQuantity).
+  const setQuantity = (item: CartItem, quantity: number) => actions.changeQuantity(item.id, quantity - item.quantity)
   const remove = (item: CartItem) => actions.remove.mutate({ itemId: item.id, name: item.name })
 
   return (
