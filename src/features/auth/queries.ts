@@ -6,7 +6,7 @@ import { fetchFavoriteNfts, fetchFavorites, fetchSession } from './api'
 import { clearToken } from './token-store'
 
 // Chaves de dados PRIVADOS começam com ['me', userId]. Duas proteções:
-//   1. O id do usuário faz parte da chave: o cache da Ana e o do Bruno nunca
+//   1. O id do usuário faz parte da chave: o cache da Ana e o do Pedro nunca
 //      se misturam, mesmo que algo escape da limpeza.
 //   2. No logout/troca, removeQueries(['me']) apaga tudo de uma vez.
 export const authQueries = {

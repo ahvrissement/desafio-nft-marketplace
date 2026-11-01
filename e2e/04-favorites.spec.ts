@@ -4,7 +4,7 @@ import { expect, login, open, setScenarios, test } from './support'
 
 test.describe('favoritos', () => {
   test('favoritar é otimista e persiste após F5', async ({ page }) => {
-    await login(page, 'bruno', '/nft/emerald-ape-042')
+    await login(page, 'pedro', '/nft/emerald-ape-042')
     const button = page.locator('section[aria-labelledby="nft-titulo"]').getByRole('button', { name: /Favorit/ })
     await button.click()
     await expect(button).toHaveAttribute('aria-pressed', 'true')
@@ -15,7 +15,7 @@ test.describe('favoritos', () => {
   })
 
   test('falha da API desfaz a mudança (rollback) e avisa; depois recupera', async ({ page }) => {
-    await login(page, 'bruno', '/nft/emerald-ape-042')
+    await login(page, 'pedro', '/nft/emerald-ape-042')
     const button = page.locator('section[aria-labelledby="nft-titulo"]').getByRole('button', { name: /Favorit/ })
     await expect(button).toHaveText('Favoritar')
 

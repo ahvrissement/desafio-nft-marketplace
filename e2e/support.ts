@@ -7,8 +7,8 @@ import { expect, test as base, type Page } from '@playwright/test'
 // mesmo service worker que o app usa. Nada de atalho direto no cache.
 
 export const USERS = {
-  ana: { email: 'ana@kurio.dev', password: 'Kurio@123', name: 'Ana Colecionadora' },
-  bruno: { email: 'bruno@kurio.dev', password: 'Kurio@123', name: 'Bruno Criador' },
+  ana: { email: 'ana@kurio.dev', password: 'Kurio@123', name: 'Ana Kurio' },
+  pedro: { email: 'pedro@kurio.dev', password: 'Kurio@123', name: 'Pedro Brito' },
 } as const
 
 // O app desenha a tela antes de o MSW ficar pronto (src/lib/mocks-ready.ts) e

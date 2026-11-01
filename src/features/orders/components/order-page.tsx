@@ -175,12 +175,22 @@ function Receipt({ order }: { order: Order }) {
           <p className="mt-5 text-center text-sm leading-6 text-text-secondary">
             Transação confirmada na {NETWORK_LABELS[order.wallet.network]}. A propriedade foi transferida para sua carteira conectada e registrada na rede.
           </p>
-          <div className="mt-5 flex justify-center">
-            {/* README: "referências de transação e links de exploração são simulados" */}
-            <a href={tx.explorerUrl} target="_blank" rel="noopener noreferrer" className="rounded-[4px] bg-primary px-4 py-3 font-bold text-ink hover:bg-text-accent">
+          <div className="mt-5 flex flex-col items-center gap-2">
+            {/* README: "referências de transação e links de exploração são simulados".
+                O aviso fica VISÍVEL: o hash não existe na rede real, e o Etherscan vai dizer isso. */}
+            <a
+              href={tx.explorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-describedby="aviso-transacao-simulada"
+              className="rounded-[4px] bg-primary px-4 py-3 font-bold text-ink hover:bg-text-accent"
+            >
               Ver no Etherscan
-              <span className="sr-only"> (abre em nova aba; transação simulada)</span>
+              <span className="sr-only"> (abre em nova aba)</span>
             </a>
+            <p id="aviso-transacao-simulada" className="text-xs text-text-subtle">
+              Transação simulada: o Etherscan não vai encontrar este hash.
+            </p>
           </div>
         </div>
         <div aria-hidden className="h-2.5 bg-primary" />

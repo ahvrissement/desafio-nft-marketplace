@@ -38,7 +38,7 @@ const emerald = () => readDb().nfts.find((nft) => nft.id === 'emerald-ape-042')!
 function orderInput(quoteId: string): CreateOrderInput {
   return {
     quoteId,
-    buyer: { displayName: 'Ana', username: 'ana', email: 'ana@kurio.dev', profileName: 'Ana Colecionadora', ensName: 'ana.kurio.eth' },
+    buyer: { displayName: 'Ana', username: 'ana', email: 'ana@kurio.dev', profileName: 'Ana Kurio', ensName: 'ana.kurio.eth' },
     wallet: { provider: 'metamask', network: 'ethereum', address: '0xa91f3c2b7d4e5f60718293a4b5c6d7e8f90ae82c', walletId: 'wallet-ana-principal' },
   }
 }
@@ -141,8 +141,8 @@ describe('pedido', () => {
   it('pedido de outra pessoa responde 404', async () => {
     const { token, quote } = await setup()
     const created = (await call('POST', '/orders', token, orderInput(quote.id), { 'Idempotency-Key': 'tentativa-0000000006' })).body
-    const bruno = await login('bruno@kurio.dev')
-    expect((await call('GET', `/orders/${created.id}`, bruno)).status).toBe(404)
+    const pedro = await login('pedro@kurio.dev')
+    expect((await call('GET', `/orders/${created.id}`, pedro)).status).toBe(404)
   })
 
   it('carteira pode recusar a conexão (cenário)', async () => {

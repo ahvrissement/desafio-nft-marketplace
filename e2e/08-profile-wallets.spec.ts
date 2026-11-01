@@ -17,7 +17,7 @@ test.describe('perfil e carteiras', () => {
 
     // Conflito vindo da API: e-mail de outra conta
     await page.getByLabel('Nome de usuário').fill('ana_coleciona')
-    await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill(USERS.bruno.email)
+    await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill(USERS.pedro.email)
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByText('Este e-mail já é usado por outra conta.')).toBeVisible()
 
@@ -71,7 +71,7 @@ test.describe('perfil e carteiras', () => {
   })
 
   test('carteiras: editar a principal, adicionar a secundária com erros e usar no pagamento', async ({ page }) => {
-    await login(page, 'bruno', '/profile/wallets')
+    await login(page, 'pedro', '/profile/wallets')
     const primary = page.getByRole('region', { name: 'Carteira principal' })
     await primary.getByRole('button', { name: 'Editar' }).click()
     await primary.getByLabel('Apelido da carteira').fill('Cofre')

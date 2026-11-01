@@ -30,7 +30,7 @@ async function login(email: string, password = 'Kurio@123') {
 describe('login e sessão', () => {
   it('entra com os usuários do seed (e-mail sem diferenciar maiúsculas)', async () => {
     const { user, token } = await login('ANA@kurio.dev')
-    expect(user).toEqual({ id: 'user-ana', name: 'Ana Colecionadora', email: 'ana@kurio.dev', avatarUrl: null })
+    expect(user).toEqual({ id: 'user-ana', name: 'Ana Kurio', email: 'ana@kurio.dev', avatarUrl: null })
     const session = await call('GET', '/auth/session', { token })
     expect(session.status).toBe(200)
     expect(session.body.user.id).toBe('user-ana')
@@ -90,17 +90,17 @@ describe('cadastro', () => {
 describe('favoritos', () => {
   it('cada usuário só vê os próprios favoritos', async () => {
     const ana = await login('ana@kurio.dev')
-    const bruno = await login('bruno@kurio.dev')
-    await call('PUT', '/me/favorites/emerald-ape-042', { token: bruno.token })
+    const pedro = await login('pedro@kurio.dev')
+    await call('PUT', '/me/favorites/emerald-ape-042', { token: pedro.token })
 
     const anaFavorites = favoritesResponseSchema.parse((await call('GET', '/me/favorites', { token: ana.token })).body)
-    const brunoFavorites = favoritesResponseSchema.parse((await call('GET', '/me/favorites', { token: bruno.token })).body)
+    const pedroFavorites = favoritesResponseSchema.parse((await call('GET', '/me/favorites', { token: pedro.token })).body)
     expect(anaFavorites.nftIds).toEqual(['sage-nomad-009', 'golden-beat-207'])
-    expect(brunoFavorites.nftIds).toEqual(['emerald-ape-042'])
+    expect(pedroFavorites.nftIds).toEqual(['emerald-ape-042'])
   })
 
   it('PUT e DELETE são idempotentes', async () => {
-    const { token } = await login('bruno@kurio.dev')
+    const { token } = await login('pedro@kurio.dev')
     await call('PUT', '/me/favorites/emerald-ape-042', { token })
     const twice = await call('PUT', '/me/favorites/emerald-ape-042', { token })
     expect(twice.body.nftIds).toEqual(['emerald-ape-042'])

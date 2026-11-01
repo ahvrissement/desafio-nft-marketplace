@@ -268,7 +268,7 @@ export function createSeedUsers(): DbUser[] {
   return [
     {
       id: 'user-ana',
-      name: 'Ana Colecionadora',
+      name: 'Ana Kurio',
       email: 'ana@kurio.dev',
       passwordSalt: 'a1f3c9e27b4d6058',
       passwordHash: '141b092cf36f323b9fe058e087e1c9fda982f333e8a284ff6cf7c57cd9da4164',
@@ -278,14 +278,14 @@ export function createSeedUsers(): DbUser[] {
       walletNickname: 'Principal',
     },
     {
-      id: 'user-bruno',
-      name: 'Bruno Criador',
-      email: 'bruno@kurio.dev',
+      id: 'user-pedro',
+      name: 'Pedro Brito',
+      email: 'pedro@kurio.dev',
       passwordSalt: 'c7e2b19f4a8d3056',
       passwordHash: '1f850f3c32d4cc3f5369eca40181333ed1fdf992803bac6e335390e483633526',
       avatarUrl: null,
-      username: 'bruno',
-      ensName: 'bruno',
+      username: 'pedro',
+      ensName: 'pedro',
       walletNickname: 'Principal',
     },
   ]
@@ -298,8 +298,8 @@ export function createSeedWallets(): Record<string, Wallet[]> {
       { id: 'wallet-ana-principal', kind: 'primary', label: 'Principal', provider: 'metamask', network: 'ethereum', address: '0xa91f3c2b7d4e5f60718293a4b5c6d7e8f90ae82c', ens: null },
       { id: 'wallet-ana-reserva', kind: 'secondary', label: 'Reserva', provider: 'coinbase', network: 'polygon', address: '0x5b2e8d1c4a7f90b3e6d2c5a8f1b4e7d0c3a69f17', ens: 'nova.kurio.eth' },
     ],
-    'user-bruno': [
-      { id: 'wallet-bruno-principal', kind: 'primary', label: 'Principal', provider: 'walletconnect', network: 'ethereum', address: '0x7c41e9b2d5f8a3c6e9b2d5f8a1c4e7b0d3f6a904', ens: 'bruno.kurio.eth' },
+    'user-pedro': [
+      { id: 'wallet-pedro-principal', kind: 'primary', label: 'Principal', provider: 'walletconnect', network: 'ethereum', address: '0x7c41e9b2d5f8a3c6e9b2d5f8a1c4e7b0d3f6a904', ens: 'pedro.kurio.eth' },
     ],
   }
 }

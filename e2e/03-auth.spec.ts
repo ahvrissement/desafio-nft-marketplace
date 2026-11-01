@@ -61,16 +61,16 @@ test.describe('conta e sessão', () => {
     await expect(favorite).toHaveText('Favoritar')
     expect(await page.evaluate(() => localStorage.getItem('kurio:session-token'))).toBeNull()
 
-    await login(page, 'bruno', '/nft/sage-nomad-009')
-    await expect(favorite).toHaveText('Favoritar') // o Bruno não vê o favorito da Ana
+    await login(page, 'pedro', '/nft/sage-nomad-009')
+    await expect(favorite).toHaveText('Favoritar') // o Pedro não vê o favorito da Ana
   })
 
   test('rota privada sem login → login e volta para ela @mobile', async ({ page }) => {
     await open(page, '/checkout')
     await expect(page).toHaveURL(/\/cart\?auth=entrar&redirect=%2Fcheckout/)
     const dialog = page.getByRole('dialog')
-    await dialog.getByLabel('E-mail').fill(USERS.bruno.email)
-    await dialog.getByLabel('Senha', { exact: true }).fill(USERS.bruno.password)
+    await dialog.getByLabel('E-mail').fill(USERS.pedro.email)
+    await dialog.getByLabel('Senha', { exact: true }).fill(USERS.pedro.password)
     await dialog.locator('button[type=submit]').click()
     await expect(page).toHaveURL(/\/checkout$/)
   })
@@ -106,7 +106,7 @@ test.describe('conta e sessão', () => {
     await page.locator('header').getByRole('button', { name: /Conta de/ }).click()
     await page.getByRole('menuitem', { name: 'Sair' }).click()
 
-    await login(page, 'bruno')
+    await login(page, 'pedro')
     await buy(page, 'sage-nomad-009')
     await page.goto('/checkout')
     await expect(page.getByLabel('Observação do colecionador (opcional)')).toHaveValue('')
