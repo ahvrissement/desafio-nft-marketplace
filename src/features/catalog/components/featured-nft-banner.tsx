@@ -15,13 +15,14 @@ export function FeaturedNftBanner() {
   if (nft === null) return null
 
   return (
-    <section aria-labelledby="destaque-titulo" className="relative overflow-hidden bg-card pt-6">
+    <section aria-labelledby="destaque-titulo" className="relative overflow-hidden bg-card pt-6 pb-1.5">
       <h2 id="destaque-titulo" className="px-5 text-2xl leading-8 font-bold text-text-accent uppercase">
         NFT em destaque
       </h2>
       <p className="mt-4 px-5 text-center text-[22px] leading-4 font-bold uppercase">Oferta limitada</p>
 
-      <div className="mt-4 h-92 overflow-hidden rounded-t-[20px]">
+      {/* Os 4 cantos arredondados, como nas outras imagens (no Figma só os de cima) */}
+      <div className="mt-4 h-92 overflow-hidden rounded-[20px]">
         {isPending ? (
           <div aria-hidden className="size-full skeleton-shimmer" />
         ) : isError ? (

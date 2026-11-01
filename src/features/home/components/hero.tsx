@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 
 import arrowIcon from '@/assets/icons/arrow-right-long.svg'
@@ -13,10 +13,12 @@ import { HERO_SLIDES, type HeroSlide } from '../content'
 const AUTOPLAY_MS = 6_000
 
 // Banner "Hero" da Home: carrossel com troca automática a cada 6s.
-// A WCAG 2.2.2 exige que o que se move sozinho possa ser pausado, então:
-//   - há um botão de pausar/retomar;
+// Sem botão de pausar (decisão de UX, ver ARCHITECTURE.md). A WCAG 2.2.2 pede
+// que o que se move sozinho possa ser parado, então, sem nada na tela:
 //   - a troca para enquanto o mouse está em cima ou o foco está dentro
 //     (ninguém perde o slide no meio da leitura);
+//   - trocar à mão (seta, ponto ou swipe) desliga a troca automática de vez:
+//     quem está escolhendo não é atropelado (recomendação do APG);
 //   - com "reduzir movimento" ligado no sistema, nem começa.
 //
 // Padrão "Carousel" do WAI-ARIA APG:
@@ -33,10 +35,14 @@ export function Hero() {
   const total = HERO_SLIDES.length
   const rotating = playing && !hovered && !focused
 
-  const goTo = (index: number) => setActive((index + total) % total)
+  // Troca feita pela pessoa: vai para o slide e desliga a troca automática
+  const goTo = (index: number) => {
+    setPlaying(false)
+    setActive((index + total) % total)
+  }
   const swipe = useSwipe({ onNext: () => goTo(active + 1), onPrevious: () => goTo(active - 1) })
 
-  // `active` nas dependências: trocar à mão reinicia a contagem dos 6s.
+  // `active` nas dependências: cada slide fica 6s inteiros na tela.
   useEffect(() => {
     if (!rotating) return
     const timer = setTimeout(() => setActive((current) => (current + 1) % total), AUTOPLAY_MS)
@@ -77,7 +83,7 @@ export function Hero() {
           ))}
         </div>
 
-        <div className="absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 items-center lg:top-96.75 lg:bottom-auto lg:left-134 lg:translate-x-0 lg:gap-2">
+        <div className="absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 items-center lg:top-96.75 lg:bottom-auto lg:left-136 lg:translate-x-0 lg:gap-2">
           <ArrowButton label="Slide anterior" onClick={() => goTo(active - 1)}>
             <ChevronLeft aria-hidden className="size-4" />
           </ArrowButton>
@@ -105,15 +111,6 @@ export function Hero() {
           <ArrowButton label="Próximo slide" onClick={() => goTo(active + 1)}>
             <ChevronRight aria-hidden className="size-4" />
           </ArrowButton>
-          <button
-            type="button"
-            // O nome diz a AÇÃO (o que acontece ao clicar), não o estado atual.
-            aria-label={playing ? 'Pausar troca automática' : 'Retomar troca automática'}
-            onClick={() => setPlaying((value) => !value)}
-            className="grid size-6 place-items-center text-primary/70 hover:text-primary"
-          >
-            {playing ? <Pause aria-hidden className="size-3 fill-current" /> : <Play aria-hidden className="size-3 fill-current" />}
-          </button>
         </div>
       </div>
     </section>
