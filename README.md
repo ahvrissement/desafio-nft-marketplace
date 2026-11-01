@@ -2,7 +2,7 @@
 
 Solução do desafio de frontend da Jungle Gaming: descoberta, compra e conta do colecionador, em desktop e mobile, sobre uma API simulada no navegador (MSW) com eventos em tempo real (Socket.IO).
 
-- **Aplicação publicada:** _(URL da Vercel)_
+- **Aplicação publicada:** https://desafio-nft-marketplace-navy.vercel.app (Vercel, com os mocks e o tempo real ligados)
 - **Arquitetura, contratos e decisões:** [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Auditoria Lighthouse:** [lighthouse/RESULTADOS.md](lighthouse/RESULTADOS.md)
 
@@ -57,6 +57,7 @@ Também dá para criar uma conta nova pelo cadastro. As senhas nunca são guarda
 ### Testes E2E (Playwright)
 
 - Rodam contra `npm run build && vite preview` (o `webServer` do Playwright sobe o servidor sozinho), no Chromium, em dois projetos: **desktop** (1440×900) e **mobile** (390×844, testes marcados com `@mobile`). Há verificações extras de layout em **768 e 320 px** (`e2e/responsive.spec.ts`).
+- **Contra o deploy:** `E2E_BASE_URL` troca o endereço e dispensa o servidor local. Exemplo: `E2E_BASE_URL=https://desafio-nft-marketplace-navy.vercel.app npx playwright test --grep-invert "regressão visual"`. Os testes visuais ficam de fora porque as baselines são da máquina local. Os 64 testes funcionais passam no ambiente publicado.
 - Os 12 fluxos do README estão em `e2e/01-catalog.spec.ts` … `e2e/12-loading-errors.spec.ts`, com regressão visual em `e2e/visual.spec.ts`.
 - Cada teste começa de um estado isolado: um contexto de navegador novo e `localStorage` vazio, logo o mock começa do seed.
 - Relógio, latência e eventos são controlados pelo teste: `page.clock` e as rotas `/api/__dev/*` do próprio mock.

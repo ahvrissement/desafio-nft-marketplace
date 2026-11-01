@@ -4,6 +4,9 @@ import { defineConfig, devices } from '@playwright/test'
 // ligado, como no deploy. Cada teste abre um contexto novo do navegador:
 // localStorage vazio = banco do mock no cenário padrão (estado isolado).
 const PORT = 4173
+// E2E_BASE_URL: roda a mesma suíte contra outro endereço (ex.: o deploy na
+// Vercel), sem subir o servidor local.
+const REMOTE_URL = process.env.E2E_BASE_URL
 
 export default defineConfig({
   testDir: 'e2e',
@@ -20,7 +23,7 @@ export default defineConfig({
   // Relatório HTML + traces das falhas (README).
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: REMOTE_URL ?? `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     locale: 'pt-BR',
@@ -31,10 +34,12 @@ export default defineConfig({
     // Mobile: só os testes marcados com @mobile (fluxos principais + visuais).
     { name: 'mobile', grep: /@mobile/, use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } } },
   ],
-  webServer: {
-    command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-  },
+  webServer: REMOTE_URL
+    ? undefined
+    : {
+        command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
+        url: `http://localhost:${PORT}`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
+      },
 })
